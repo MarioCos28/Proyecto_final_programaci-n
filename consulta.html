@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <title>CONSULTA DE EQUIPO</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+    <style>
+        #tabla-resultados thead th { background-color: #4364EA; color: white; }
+        #spinner { display: none; }
+    </style>
+</head>
+<body>
+<div class="container-fluid mt-4">
+
+    <ul class="nav nav-tabs nav-justified" id="tabsConsulta" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active" id="tab-busqueda"
+                    data-bs-toggle="tab" data-bs-target="#consulta1" type="button" role="tab">
+                Búsqueda de equipo
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" id="tab-resultados"
+                    data-bs-toggle="tab" data-bs-target="#resultado1" type="button" role="tab" disabled>
+                Resultados
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content mt-3">
+
+        <!-- PESTAÑA 1: BÚSQUEDA -->
+        <div id="consulta1" class="tab-pane fade show active" role="tabpanel">
+            <div class="card p-4 shadow-sm">
+                <h5>Criterios de Búsqueda</h5>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Número de Serie o Activo:</label>
+                        <input type="text" class="form-control text-uppercase" id="buscar_serie"
+                               placeholder="Ej: BR54932014MX"
+                               oninput="this.value = this.value.toUpperCase()">
+                    </div>
+                </div>
+                <div id="spinner" class="mb-2">
+                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                    <span class="ms-2 text-muted">Buscando...</span>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="button" onclick="buscarEquipo()" class="btn btn-primary">🔍 Buscar Equipo</button>
+                    <button type="button" onclick="verTodos()" class="btn btn-secondary">📋 Ver todos</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PESTAÑA 2: RESULTADOS -->
+        <div id="resultado1" class="tab-pane fade" role="tabpanel">
+            <div class="card p-4 shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">Equipos Encontrados</h5>
+                    <span id="total-registros" class="badge bg-primary fs-6"></span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover" id="tabla-resultados">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Marca</th>
+                                <th>Modelo</th>
+                                <th>Activo</th>
+                                <th>Estado</th>
+                                <th>Detalle</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cuerpo-tabla"></tbody>
+                    </table>
+                </div>
+                <button type="button" onclick="volverBusqueda()" class="btn btn-secondary mt-2">← Volver</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: VER DETALLE / EDITAR -->
+<div class="modal fade" id="modalDetalle" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" style="background-color:#4364EA;">
+                <h5 class="modal-title text-white">Detalle del Equipo</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+
+                <!-- VISTA SOLO LECTURA -->
+                <div id="vista-detalle">
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="fw-bold">ID:</label><p id="d-id"></p></div>
+                        <div class="col-md-6"><label class="fw-bold">Tipo de Equipo:</label><p id="d-tipo"></p></div>
+                        <div class="col-md-6"><label class="fw-bold">Marca:</label><p id="d-marca"></p></div>
+                        <div class="col-md-6"><label class="fw-bold">Modelo:</label><p id="d-modelo"></p></div>
+                        <div class="col-md-6"><label class="fw-bold">Núm. Serie:</label><p id="d-serie"></p></div>
+                        <div class="col-md-6"><label class="fw-bold">Núm. Activo:</label><p id="d-activo"></p></div>
+                        <div class="col-md-6"><label class="fw-bold">Estado:</label><p id="d-estado"></p></div>
+                        <div class="col-md-6"><label class="fw-bold">Condición:</label><p id="d-condicion"></p></div>
+                        <div class="col-md-6"><label class="fw-bold">Fecha Compra:</label><p id="d-fecha-compra"></p></div>
+                        <div class="col-md-6"><label class="fw-bold">Fecha Asignación:</label><p id="d-fecha-asig"></p></div>
+                        <div class="col-md-6"><label class="fw-bold">Fecha Mantenimiento:</label><p id="d-fecha-mant"></p></div>
+                        <div class="col-md-6"><label class="fw-bold">Usuario Ingreso:</label><p id="d-usuario"></p></div>
+                        <div class="col-md-12"><label class="fw-bold">Comentario:</label><p id="d-comentario"></p></div>
+                    </div>
+                </div>
+
+                <!-- VISTA EDICIÓN -->
+                <div id="vista-edicion" style="display:none;">
+                    <div class="row g-3">
+                        <input type="hidden" id="e-id">
+                        <div class="col-md-6">
+                            <label class="fw-bold">Tipo de Equipo</label>
+                            <select class="form-control" id="e-tipo">
+                                <option value="Laptop">Laptop</option>
+                                <option value="Monitor">Monitor</option>
+                                <option value="Cañonera">Cañonera</option>
+                                <option value="Switch">Switch</option>
+                                <option value="Otros">Otros</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="fw-bold">Marca</label>
+                            <input type="text" class="form-control text-uppercase" id="e-marca" oninput="this.value=this.value.toUpperCase()">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="fw-bold">Modelo</label>
+                            <input type="text" class="form-control text-uppercase" id="e-modelo" oninput="this.value=this.value.toUpperCase()">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="fw-bold">Núm. Serie</label>
+                            <input type="text" class="form-control text-uppercase" id="e-serie" oninput="this.value=this.value.toUpperCase()">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="fw-bold">Núm. Activo</label>
+                            <input type="text" class="form-control text-uppercase" id="e-activo" oninput="this.value=this.value.toUpperCase()">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="fw-bold">Estado</label>
+                            <select class="form-control" id="e-estado">
+                                <option value="NUEVO">NUEVO</option>
+                                <option value="USADO">USADO</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="fw-bold">Condición</label>
+                            <select class="form-control" id="e-condicion">
+                                <option value="NUEVO">NUEVO</option>
+                                <option value="EXCELENTE">EXCELENTE</option>
+                                <option value="BUENA">BUENA</option>
+                                <option value="USADO">USADO</option>
+                                <option value="MALO">MALO</option>
+                                <option value="OBSOLETO">OBSOLETO</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="fw-bold">Fecha Compra</label>
+                            <input type="date" class="form-control" id="e-fecha-compra">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="fw-bold">Fecha Asignación</label>
+                            <input type="date" class="form-control" id="e-fecha-asig">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="fw-bold">Fecha Mantenimiento</label>
+                            <input type="date" class="form-control" id="e-fecha-mant">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="fw-bold">Usuario Ingreso</label>
+                            <input type="text" class="form-control" id="e-usuario">
+                        </div>
+                        <div class="col-md-12">
+                            <label class="fw-bold">Comentario</label>
+                            <textarea class="form-control text-uppercase" id="e-comentario" rows="2" oninput="this.value=this.value.toUpperCase()"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BOTONES DEL MODAL -->
+            <div class="modal-footer">
+                <div id="botones-detalle" class="w-100 d-flex gap-2">
+                    <button type="button" class="btn btn-warning" onclick="activarEdicion()">✏️ Modificar</button>
+                    <button type="button" class="btn btn-danger" onclick="eliminarEquipo()">🗑️ Eliminar</button>
+                    <button type="button" class="btn btn-secondary ms-auto" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+                <div id="botones-edicion" class="w-100 d-flex gap-2" style="display:none !important;">
+                    <button type="button" class="btn btn-success" onclick="guardarCambios()">💾 Guardar cambios</button>
+                    <button type="button" class="btn btn-secondary" onclick="cancelarEdicion()">✖ Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_URL = "http://127.0.0.1:8000";
+    let equipoActual = null;
+
+    async function buscarEquipo() {
+        const valor = document.getElementById("buscar_serie").value.trim();
+        if (!valor) { swal("Atención", "Ingresa un número de serie o activo", "warning"); return; }
+        mostrarSpinner(true);
+        try {
+            const res  = await fetch(`${API_URL}/inventario`);
+            const data = await res.json();
+            const resultados = data.inventario.filter(e =>
+                (e.serie  && e.serie.toUpperCase().includes(valor)) ||
+                (e.activo && e.activo.toUpperCase().includes(valor))
+            );
+            resultados.length === 0
+                ? swal("Sin resultados", "No se encontró ningún equipo.", "info")
+                : pintarTabla(resultados);
+        } catch { swal("Error", "No se pudo conectar con la API.", "error"); }
+        mostrarSpinner(false);
+    }
+
+    async function verTodos() {
+        mostrarSpinner(true);
+        try {
+            const res  = await fetch(`${API_URL}/inventario`);
+            const data = await res.json();
+            data.inventario.length === 0
+                ? swal("Sin registros", "No hay equipos aún.", "info")
+                : pintarTabla(data.inventario);
+        } catch { swal("Error", "No se pudo conectar con la API.", "error"); }
+        mostrarSpinner(false);
+    }
+
+    function pintarTabla(equipos) {
+        const tbody = document.getElementById("cuerpo-tabla");
+        tbody.innerHTML = "";
+        equipos.forEach(e => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${e.id_equipo ?? "-"}</td>
+                    <td>${e.marca ?? "-"}</td>
+                    <td>${e.modelo ?? "-"}</td>
+                    <td>${e.activo ?? "-"}</td>
+                    <td>${e.estado ?? "-"}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick='abrirDetalle(${JSON.stringify(e)})'>
+                            👁 Ver detalle
+                        </button>
+                    </td>
+                </tr>`;
+        });
+        document.getElementById("total-registros").textContent = `${equipos.length} registro(s)`;
+        const btn = document.getElementById("tab-resultados");
+        btn.removeAttribute("disabled");
+        bootstrap.Tab.getOrCreateInstance(btn).show();
+    }
+
+    function abrirDetalle(equipo) {
+        equipoActual = equipo;
+        document.getElementById("d-id").textContent           = equipo.id_equipo            ?? "-";
+        document.getElementById("d-tipo").textContent         = equipo.tipo_equipo           ?? "-";
+        document.getElementById("d-marca").textContent        = equipo.marca                 ?? "-";
+        document.getElementById("d-modelo").textContent       = equipo.modelo                ?? "-";
+        document.getElementById("d-serie").textContent        = equipo.serie                 ?? "-";
+        document.getElementById("d-activo").textContent       = equipo.activo                ?? "-";
+        document.getElementById("d-estado").textContent       = equipo.estado                ?? "-";
+        document.getElementById("d-condicion").textContent    = equipo.condicion_equipo       ?? "-";
+        document.getElementById("d-fecha-compra").textContent = equipo.fecha_compra           ?? "-";
+        document.getElementById("d-fecha-asig").textContent   = equipo.fecha_asig             ?? "-";
+        document.getElementById("d-fecha-mant").textContent   = equipo.fecha_mantenimiento    ?? "-";
+        document.getElementById("d-usuario").textContent      = equipo.usur_ingresa           ?? "-";
+        document.getElementById("d-comentario").textContent   = equipo.comentario             ?? "-";
+
+        document.getElementById("vista-detalle").style.display   = "block";
+        document.getElementById("vista-edicion").style.display   = "none";
+        document.getElementById("botones-detalle").style.display = "flex";
+        document.getElementById("botones-edicion").style.display = "none";
+
+        new bootstrap.Modal(document.getElementById("modalDetalle")).show();
+    }
+
+    function activarEdicion() {
+        const e = equipoActual;
+        document.getElementById("e-id").value            = e.id_equipo;
+        document.getElementById("e-tipo").value          = e.tipo_equipo            ?? "";
+        document.getElementById("e-marca").value         = e.marca                  ?? "";
+        document.getElementById("e-modelo").value        = e.modelo                 ?? "";
+        document.getElementById("e-serie").value         = e.serie                  ?? "";
+        document.getElementById("e-activo").value        = e.activo                 ?? "";
+        document.getElementById("e-estado").value        = e.estado                 ?? "";
+        document.getElementById("e-condicion").value     = e.condicion_equipo        ?? "";
+        document.getElementById("e-fecha-compra").value  = e.fecha_compra            ?? "";
+        document.getElementById("e-fecha-asig").value    = e.fecha_asig              ?? "";
+        document.getElementById("e-fecha-mant").value    = e.fecha_mantenimiento     ?? "";
+        document.getElementById("e-usuario").value       = e.usur_ingresa            ?? "";
+        document.getElementById("e-comentario").value    = e.comentario              ?? "";
+
+        document.getElementById("vista-detalle").style.display   = "none";
+        document.getElementById("vista-edicion").style.display   = "block";
+        document.getElementById("botones-detalle").style.display = "none";
+        document.getElementById("botones-edicion").style.display = "flex";
+    }
+
+    function cancelarEdicion() {
+        document.getElementById("vista-detalle").style.display   = "block";
+        document.getElementById("vista-edicion").style.display   = "none";
+        document.getElementById("botones-detalle").style.display = "flex";
+        document.getElementById("botones-edicion").style.display = "none";
+    }
+
+    async function guardarCambios() {
+        const id = document.getElementById("e-id").value;
+        const payload = {
+            tipo_equipo:         document.getElementById("e-tipo").value,
+            marca:               document.getElementById("e-marca").value,
+            modelo:              document.getElementById("e-modelo").value,
+            serie:               document.getElementById("e-serie").value,
+            activo:              document.getElementById("e-activo").value,
+            estado:              document.getElementById("e-estado").value,
+            condicion_equipo:    document.getElementById("e-condicion").value,
+            comentario:          document.getElementById("e-comentario").value,
+            fecha_compra:        document.getElementById("e-fecha-compra").value,
+            fecha_asig:          document.getElementById("e-fecha-asig").value   || null,
+            fecha_mantenimiento: document.getElementById("e-fecha-mant").value   || null,
+            usur_ingresa:        document.getElementById("e-usuario").value       || null,
+            foto_equipo:         null
+        };
+        try {
+            const res = await fetch(`${API_URL}/inventario/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+                bootstrap.Modal.getInstance(document.getElementById("modalDetalle")).hide();
+                swal("¡Actualizado!", "El equipo fue modificado correctamente.", "success");
+                verTodos();
+            } else {
+                const err = await res.json();
+                swal("Error", err.detail ?? "No se pudo actualizar.", "error");
+            }
+        } catch { swal("Error", "No se pudo conectar con la API.", "error"); }
+    }
+
+    function eliminarEquipo() {
+        const id = equipoActual.id_equipo;
+        swal({
+            title: "¿Eliminar este equipo?",
+            text: "Esta acción no se puede deshacer.",
+            icon: "warning",
+            buttons: { cancel: "Cancelar", confirm: { text: "Sí, eliminar", className: "btn-danger" } }
+        }).then(async (confirm) => {
+            if (!confirm) return;
+            try {
+                const res = await fetch(`${API_URL}/inventario/${id}`, { method: "DELETE" });
+                if (res.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById("modalDetalle")).hide();
+                    swal("¡Eliminado!", "El equipo fue eliminado correctamente.", "success");
+                    verTodos();
+                } else {
+                    swal("Error", "No se pudo eliminar el equipo.", "error");
+                }
+            } catch { swal("Error", "No se pudo conectar con la API.", "error"); }
+        });
+    }
+
+    function volverBusqueda() {
+        bootstrap.Tab.getOrCreateInstance(document.getElementById("tab-busqueda")).show();
+    }
+    function mostrarSpinner(v) {
+        document.getElementById("spinner").style.display = v ? "block" : "none";
+    }
+    document.getElementById("buscar_serie").addEventListener("keypress", e => {
+        if (e.key === "Enter") buscarEquipo();
+    });
+</script>
+</body>
+</html>
