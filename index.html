@@ -5,18 +5,39 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
-    <!-- Bootstrap CDN (sin necesidad de archivos locales) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- SweetAlert CDN -->
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 
     <style>
-        .navbar {
-            background-color: #4364EA !important;
-            border-radius: 10px;
+        .navbar { background-color: #4364EA !important; border-radius: 10px; }
+
+        /* Indicador de validación en tiempo real */
+        .campo-ok    { border-color: #198754 !important; }
+        .campo-error { border-color: #dc3545 !important; }
+
+        .feedback-campo {
+            font-size: 0.82rem;
+            margin-top: 4px;
+            min-height: 18px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
+        .feedback-campo.ok    { color: #198754; }
+        .feedback-campo.error { color: #dc3545; }
+        .feedback-campo.checking { color: #6c757d; }
+
+        /* Spinner pequeño dentro del campo */
+        .spinner-field {
+            width: 14px; height: 14px;
+            border: 2px solid #ccc;
+            border-top-color: #6c757d;
+            border-radius: 50%;
+            display: inline-block;
+            animation: spin .6s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 	
@@ -48,7 +69,7 @@
 
             <br>
             <div class="col-sm-12 col-md-12 col-lg-12">
-                
+
                 <!-- LAPTOP -->
                 <div id="ing_laptop" class="ingreso_equipo" style="display: none">
                     <div class="row mb-3"><div><strong>Registro de Laptop</strong></div></div>
@@ -65,17 +86,23 @@
                         </div>
                         <div class="col-md-6 form-group">
                             <label>MODELO</label>
-                            <input type="text" id="modelo_equipo_laptop" class="form-control text-uppercase" oninput="this.value = this.value.toUpperCase()" placeholder="INGRESE EL MODELO DE LA LAPTOP">
+                            <input type="text" id="modelo_equipo_laptop" class="form-control text-uppercase" oninput="this.value=this.value.toUpperCase()" placeholder="INGRESE EL MODELO DE LA LAPTOP">
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-6 form-group">
                             <label>Num. Serie</label>
-                            <input type="text" id="serie_equip_laptop" class="form-control text-uppercase" oninput="this.value = this.value.toUpperCase()" placeholder="EJE. 5DC5648D">
+                            <input type="text" id="serie_equip_laptop" class="form-control text-uppercase"
+                                   oninput="this.value=this.value.toUpperCase(); validarCampoEnVivo(this,'serie','fb_serie_laptop')"
+                                   placeholder="EJE. 5DC5648D">
+                            <div id="fb_serie_laptop" class="feedback-campo"></div>
                         </div>
                         <div class="col-md-6 form-group">
                             <label>Num. Activo</label>
-                            <input type="text" id="num_activo_laptop" class="form-control text-uppercase" oninput="this.value = this.value.toUpperCase()" placeholder="EJE. 009783">
+                            <input type="text" id="num_activo_laptop" class="form-control text-uppercase"
+                                   oninput="this.value=this.value.toUpperCase(); validarCampoEnVivo(this,'activo','fb_activo_laptop')"
+                                   placeholder="EJE. 009783">
+                            <div id="fb_activo_laptop" class="feedback-campo"></div>
                         </div>
                     </div>
                     <div class="row mb-3">
@@ -103,7 +130,7 @@
                     <div class="row mb-3">
                         <div class="col-md-12">
                             <label class="fw-bold">Observaciones / Comentarios</label>
-                            <textarea id="obs_equipo_lap" class="form-control text-uppercase" rows="3" placeholder="INGRESE DETALLES ADICIONALES" oninput="this.value = this.value.toUpperCase()"></textarea>
+                            <textarea id="obs_equipo_lap" class="form-control text-uppercase" rows="3" placeholder="INGRESE DETALLES ADICIONALES" oninput="this.value=this.value.toUpperCase()"></textarea>
                         </div>
                     </div>
                 </div>
@@ -125,17 +152,23 @@
                         </div>
                         <div class="col-md-6 form-group">
                             <label>MODELO</label>
-                            <input type="text" id="modelo_equipo_mon" class="form-control text-uppercase" oninput="this.value = this.value.toUpperCase()" placeholder="INGRESE EL MODELO DEL MONITOR">
+                            <input type="text" id="modelo_equipo_mon" class="form-control text-uppercase" oninput="this.value=this.value.toUpperCase()" placeholder="INGRESE EL MODELO DEL MONITOR">
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-6 form-group">
                             <label>Num. Serie</label>
-                            <input type="text" id="serie_equip_mon" class="form-control text-uppercase" oninput="this.value = this.value.toUpperCase()" placeholder="EJE. 484SFA">
+                            <input type="text" id="serie_equip_mon" class="form-control text-uppercase"
+                                   oninput="this.value=this.value.toUpperCase(); validarCampoEnVivo(this,'serie','fb_serie_mon')"
+                                   placeholder="EJE. 484SFA">
+                            <div id="fb_serie_mon" class="feedback-campo"></div>
                         </div>
                         <div class="col-md-6 form-group">
                             <label>Num. Activo</label>
-                            <input type="text" id="num_activo_mon" class="form-control text-uppercase" oninput="this.value = this.value.toUpperCase()" placeholder="EJE. 003489">
+                            <input type="text" id="num_activo_mon" class="form-control text-uppercase"
+                                   oninput="this.value=this.value.toUpperCase(); validarCampoEnVivo(this,'activo','fb_activo_mon')"
+                                   placeholder="EJE. 003489">
+                            <div id="fb_activo_mon" class="feedback-campo"></div>
                         </div>
                     </div>
                     <div class="row mb-3">
@@ -163,7 +196,7 @@
                     <div class="row mb-3">
                         <div class="col-md-12">
                             <label class="fw-bold">Observaciones / Comentarios</label>
-                            <textarea id="obs_equipo_mon" class="form-control text-uppercase" rows="3" placeholder="INGRESE DETALLES ADICIONALES" oninput="this.value = this.value.toUpperCase()"></textarea>
+                            <textarea id="obs_equipo_mon" class="form-control text-uppercase" rows="3" placeholder="INGRESE DETALLES ADICIONALES" oninput="this.value=this.value.toUpperCase()"></textarea>
                         </div>
                     </div>
                 </div>
@@ -182,17 +215,23 @@
                         </div>
                         <div class="col-md-6 form-group">
                             <label>MODELO</label>
-                            <input type="text" id="modelo_equipo_cano" class="form-control text-uppercase" oninput="this.value = this.value.toUpperCase()" placeholder="INGRESE EL MODELO DE CAÑONERA">
+                            <input type="text" id="modelo_equipo_cano" class="form-control text-uppercase" oninput="this.value=this.value.toUpperCase()" placeholder="INGRESE EL MODELO DE CAÑONERA">
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-6 form-group">
                             <label>Num. Serie</label>
-                            <input type="text" id="serie_equip_cano" class="form-control text-uppercase" oninput="this.value = this.value.toUpperCase()" placeholder="EJE. AS1894A">
+                            <input type="text" id="serie_equip_cano" class="form-control text-uppercase"
+                                   oninput="this.value=this.value.toUpperCase(); validarCampoEnVivo(this,'serie','fb_serie_cano')"
+                                   placeholder="EJE. AS1894A">
+                            <div id="fb_serie_cano" class="feedback-campo"></div>
                         </div>
                         <div class="col-md-6 form-group">
                             <label>Num. Activo</label>
-                            <input type="text" id="num_activo_cano" class="form-control text-uppercase" oninput="this.value = this.value.toUpperCase()" placeholder="EJE. 000490">
+                            <input type="text" id="num_activo_cano" class="form-control text-uppercase"
+                                   oninput="this.value=this.value.toUpperCase(); validarCampoEnVivo(this,'activo','fb_activo_cano')"
+                                   placeholder="EJE. 000490">
+                            <div id="fb_activo_cano" class="feedback-campo"></div>
                         </div>
                     </div>
                     <div class="row mb-3">
@@ -220,7 +259,7 @@
                     <div class="row mb-3">
                         <div class="col-md-12">
                             <label class="fw-bold">Observaciones / Comentarios</label>
-                            <textarea id="obs_equipo_cano" class="form-control text-uppercase" rows="3" placeholder="INGRESE DETALLES ADICIONALES" oninput="this.value = this.value.toUpperCase()"></textarea>
+                            <textarea id="obs_equipo_cano" class="form-control text-uppercase" rows="3" placeholder="INGRESE DETALLES ADICIONALES" oninput="this.value=this.value.toUpperCase()"></textarea>
                         </div>
                     </div>
                 </div>
@@ -239,17 +278,23 @@
                         </div>
                         <div class="col-md-6 form-group">
                             <label>MODELO</label>
-                            <input type="text" id="modelo_equipo_switch" class="form-control text-uppercase" oninput="this.value = this.value.toUpperCase()" placeholder="INGRESE EL MODELO DEL SWITCH">
+                            <input type="text" id="modelo_equipo_switch" class="form-control text-uppercase" oninput="this.value=this.value.toUpperCase()" placeholder="INGRESE EL MODELO DEL SWITCH">
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-6 form-group">
                             <label>Num. Serie</label>
-                            <input type="text" id="serie_equip_switch" class="form-control text-uppercase" oninput="this.value = this.value.toUpperCase()" placeholder="EJE. A49ASD">
+                            <input type="text" id="serie_equip_switch" class="form-control text-uppercase"
+                                   oninput="this.value=this.value.toUpperCase(); validarCampoEnVivo(this,'serie','fb_serie_switch')"
+                                   placeholder="EJE. A49ASD">
+                            <div id="fb_serie_switch" class="feedback-campo"></div>
                         </div>
                         <div class="col-md-6 form-group">
                             <label>Num. Activo</label>
-                            <input type="text" id="num_activo_switch" class="form-control text-uppercase" oninput="this.value = this.value.toUpperCase()" placeholder="EJE. 000397">
+                            <input type="text" id="num_activo_switch" class="form-control text-uppercase"
+                                   oninput="this.value=this.value.toUpperCase(); validarCampoEnVivo(this,'activo','fb_activo_switch')"
+                                   placeholder="EJE. 000397">
+                            <div id="fb_activo_switch" class="feedback-campo"></div>
                         </div>
                     </div>
                     <div class="row mb-3">
@@ -277,7 +322,7 @@
                     <div class="row mb-3">
                         <div class="col-md-12">
                             <label class="fw-bold">Observaciones / Comentarios</label>
-                            <textarea id="obs_equipo_switch" class="form-control text-uppercase" rows="3" placeholder="INGRESE DETALLES ADICIONALES" oninput="this.value = this.value.toUpperCase()"></textarea>
+                            <textarea id="obs_equipo_switch" class="form-control text-uppercase" rows="3" placeholder="INGRESE DETALLES ADICIONALES" oninput="this.value=this.value.toUpperCase()"></textarea>
                         </div>
                     </div>
                 </div>
@@ -295,17 +340,23 @@
                         </div>
                         <div class="col-md-6 form-group">
                             <label>MODELO</label>
-                            <input type="text" id="modelo_equipo_otros" class="form-control text-uppercase" oninput="this.value = this.value.toUpperCase()" placeholder="INGRESE EL MODELO DEL EQUIPO">
+                            <input type="text" id="modelo_equipo_otros" class="form-control text-uppercase" oninput="this.value=this.value.toUpperCase()" placeholder="INGRESE EL MODELO DEL EQUIPO">
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-6 form-group">
                             <label>Num. Serie</label>
-                            <input type="text" id="serie_equip_otros" class="form-control text-uppercase" oninput="this.value = this.value.toUpperCase()" placeholder="EJE. 16AD8E">
+                            <input type="text" id="serie_equip_otros" class="form-control text-uppercase"
+                                   oninput="this.value=this.value.toUpperCase(); validarCampoEnVivo(this,'serie','fb_serie_otros')"
+                                   placeholder="EJE. 16AD8E">
+                            <div id="fb_serie_otros" class="feedback-campo"></div>
                         </div>
                         <div class="col-md-6 form-group">
                             <label>Num. Activo</label>
-                            <input type="text" id="num_activo_otros" class="form-control text-uppercase" oninput="this.value = this.value.toUpperCase()" placeholder="EJE. 000148">
+                            <input type="text" id="num_activo_otros" class="form-control text-uppercase"
+                                   oninput="this.value=this.value.toUpperCase(); validarCampoEnVivo(this,'activo','fb_activo_otros')"
+                                   placeholder="EJE. 000148">
+                            <div id="fb_activo_otros" class="feedback-campo"></div>
                         </div>
                     </div>
                     <div class="row mb-3">
@@ -333,7 +384,7 @@
                     <div class="row mb-3">
                         <div class="col-md-12">
                             <label class="fw-bold">Observaciones / Comentarios</label>
-                            <textarea id="obs_equipo_otros" class="form-control text-uppercase" rows="3" placeholder="INGRESE DETALLES ADICIONALES" oninput="this.value = this.value.toUpperCase()"></textarea>
+                            <textarea id="obs_equipo_otros" class="form-control text-uppercase" rows="3" placeholder="INGRESE DETALLES ADICIONALES" oninput="this.value=this.value.toUpperCase()"></textarea>
                         </div>
                     </div>
                 </div>
@@ -352,7 +403,67 @@
     <script>
         const API_URL = "http://127.0.0.1:8000";
 
-        // Mostrar/ocultar sección según tipo de equipo
+        // ── Cache del inventario (se carga una vez y se refresca al registrar) ──
+        let inventarioCache = [];
+
+        async function cargarInventario() {
+            try {
+                const res  = await fetch(`${API_URL}/inventario`);
+                const data = await res.json();
+                inventarioCache = data.inventario || [];
+            } catch {
+                inventarioCache = [];
+            }
+        }
+
+        // Cargar al inicio
+        cargarInventario();
+
+        // ── Debounce: espera 350ms después del último teclazo ───────────────────
+        const timers = {};
+        function debounce(key, fn, delay = 350) {
+            clearTimeout(timers[key]);
+            timers[key] = setTimeout(fn, delay);
+        }
+
+        // ── Validación en vivo ──────────────────────────────────────────────────
+        function validarCampoEnVivo(input, tipo, fbId) {
+            const valor = input.value.trim();
+            const fb    = document.getElementById(fbId);
+
+            // Campo vacío → limpiar feedback
+            if (!valor) {
+                setFeedback(input, fb, '', '');
+                return;
+            }
+
+            // Mostrar "verificando..." mientras espera el debounce
+            setFeedback(input, fb, 'checking', '<span class="spinner-field"></span> Verificando...');
+
+            debounce(fbId, () => {
+                const campo  = tipo === 'serie' ? 'serie' : 'activo';
+                const existe = inventarioCache.some(
+                    e => e[campo] && e[campo].toUpperCase() === valor.toUpperCase()
+                );
+
+                if (existe) {
+                    const label = tipo === 'serie' ? 'serie' : 'activo';
+                    setFeedback(input, fb, 'error', ` Ya existe un equipo con este ${label}`);
+                } else {
+                    setFeedback(input, fb, 'ok', ' Disponible');
+                }
+            });
+        }
+
+        function setFeedback(input, fb, estado, html) {
+            fb.innerHTML   = html;
+            fb.className   = 'feedback-campo ' + estado;
+            input.classList.remove('campo-ok', 'campo-error');
+            if (estado === 'ok')    input.classList.add('campo-ok');
+            if (estado === 'error') input.classList.add('campo-error');
+        }
+
+        // ── Mostrar/ocultar sección según tipo de equipo ────────────────────────
         const opt = document.getElementById("tipo_equipo");
         if (opt) {
             opt.addEventListener("change", function(e) {
@@ -365,7 +476,7 @@
             });
         }
 
-        // Mapa de campos por tipo de equipo
+        // ── Mapa de campos por tipo de equipo ───────────────────────────────────
         const camposPorTipo = {
             "1": {
                 tipo: "Laptop",
@@ -419,6 +530,7 @@
             }
         };
 
+        // ── Botón "Ingresar registro" ────────────────────────────────────────────
         function ingreso_equipo() {
             const tipo = document.getElementById("tipo_equipo").value;
 
@@ -429,77 +541,98 @@
 
             const campos = camposPorTipo[tipo];
 
-            // Validaciones
-            if (!campos.marca())     { swal("Validar datos", "Seleccione la marca del equipo", "error"); return; }
-            if (!campos.modelo())    { swal("Validar datos", "Ingrese el modelo del equipo", "error"); return; }
-            if (!campos.serie())     { swal("Validar datos", "Ingrese el número de serie", "error"); return; }
-            if (!campos.activo())    { swal("Validar datos", "Ingrese el número de activo", "error"); return; }
-            if (!campos.estado())    { swal("Validar datos", "Seleccione el estado del equipo", "error"); return; }
-            if (!campos.condicion()) { swal("Validar datos", "Seleccione la condición del equipo", "error"); return; }
-            if (!campos.comentario()){ swal("Validar datos", "Ingrese una observación o comentario", "error"); return; }
+            if (!campos.marca())      { swal("Validar datos", "Seleccione la marca del equipo", "error"); return; }
+            if (!campos.modelo())     { swal("Validar datos", "Ingrese el modelo del equipo", "error"); return; }
+            if (!campos.serie())      { swal("Validar datos", "Ingrese el número de serie", "error"); return; }
+            if (!campos.activo())     { swal("Validar datos", "Ingrese el número de activo", "error"); return; }
+            if (!campos.estado())     { swal("Validar datos", "Seleccione el estado del equipo", "error"); return; }
+            if (!campos.condicion())  { swal("Validar datos", "Seleccione la condición del equipo", "error"); return; }
+            if (!campos.comentario()) { swal("Validar datos", "Ingrese una observación o comentario", "error"); return; }
 
-swal({
-    title: "¿Desea ingresar este equipo al sistema?",
-    text: "Asegúrese de que la información sea correcta.",
-    icon: "warning",
-    buttons: {
-        cancel: "Cancelar",
-        confirm: { text: "Sí, continuar", className: "btn-success" }
-    }
-}).then((confirm) => {
-    if (confirm) {
-        enviarAFastAPI(campos);
-    }
-});
+            // Bloquear si hay duplicados detectados en vivo
+            const serieDup  = inventarioCache.some(e => e.serie  && e.serie.toUpperCase()  === campos.serie().toUpperCase());
+            const activoDup = inventarioCache.some(e => e.activo && e.activo.toUpperCase() === campos.activo().toUpperCase());
+
+            if (serieDup) {
+                swal("Serie duplicada", `Ya existe un equipo con la serie "${campos.serie()}". Corrija el número antes de continuar.`, "error");
+                return;
+            }
+            if (activoDup) {
+                swal("Activo duplicado", `Ya existe un equipo con el activo "${campos.activo()}". Corrija el número antes de continuar.`, "error");
+                return;
+            }
+
+            swal({
+                title: "¿Desea ingresar este equipo al sistema?",
+                text:  "Asegúrese de que la información sea correcta.",
+                icon:  "warning",
+                buttons: {
+                    cancel:  "Cancelar",
+                    confirm: { text: "Sí, continuar", className: "btn-success" }
+                }
+            }).then((confirm) => {
+                if (confirm) enviarAFastAPI(campos);
+            });
         }
 
+        // ── Envío a FastAPI ─────────────────────────────────────────────────────
         async function enviarAFastAPI(campos) {
-            // Fecha de hoy en formato YYYY-MM-DD
-            const hoy = new Date().toISOString().split("T")[0];
+            const hoy    = new Date().toISOString().split("T")[0];
+            const serie  = campos.serie();
+            const activo = campos.activo();
 
             const payload = {
-                tipo_equipo:        campos.tipo,
-                marca:              campos.marca(),
-                modelo:             campos.modelo(),
-                serie:              campos.serie(),
-                activo:             campos.activo(),
-                estado:             campos.estado(),
-                condicion_equipo:   campos.condicion(),
-                comentario:         campos.comentario(),
-                fecha_compra:       hoy,   // puedes agregar un campo de fecha si lo necesitas
-                fecha_asig:         null,
-                fecha_mantenimiento:null,
-                usur_ingresa:       null,
-                foto_equipo:        null
+                tipo_equipo:         campos.tipo,
+                marca:               campos.marca(),
+                modelo:              campos.modelo(),
+                serie:               serie,
+                activo:              activo,
+                estado:              campos.estado(),
+                condicion_equipo:    campos.condicion(),
+                comentario:          campos.comentario(),
+                fecha_compra:        hoy,
+                fecha_asig:          null,
+                fecha_mantenimiento: null,
+                usur_ingresa:        null,
+                foto_equipo:         null
             };
 
             try {
                 const response = await fetch(`${API_URL}/inventario`, {
-                    method: "POST",
+                    method:  "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload)
+                    body:    JSON.stringify(payload)
                 });
 
                 if (response.ok) {
-                    swal("¡Éxito!", "Equipo registrado correctamente en la base de datos.", "success");
+                    const data = await response.json();
+                    // Refrescar cache con el nuevo registro
+                    await cargarInventario();
+                    swal("¡Éxito!", `Equipo registrado correctamente. ID asignado: #${data.id_equipo}`, "success");
                     limpiarFormulario();
                 } else {
                     const error = await response.json();
                     swal("Error", "No se pudo registrar: " + (error.detail || "Error desconocido"), "error");
                 }
-            } catch (err) {
+            } catch {
                 swal("Error de conexión", "No se pudo conectar con la API. Verifique que FastAPI esté corriendo.", "error");
             }
         }
 
+        // ── Limpiar formulario ──────────────────────────────────────────────────
         function limpiarFormulario() {
-            // Resetear selector de tipo
             document.getElementById("tipo_equipo").value = "0";
-            // Ocultar todos los paneles
             document.querySelectorAll(".ingreso_equipo").forEach(el => el.style.display = "none");
-            // Limpiar todos los inputs y selects
             document.querySelectorAll("input[type='text'], textarea, select").forEach(el => {
                 if (el.id !== "tipo_equipo") el.value = "";
+            });
+            // Limpiar todos los feedbacks
+            document.querySelectorAll(".feedback-campo").forEach(fb => {
+                fb.innerHTML  = "";
+                fb.className  = "feedback-campo";
+            });
+            document.querySelectorAll(".campo-ok, .campo-error").forEach(el => {
+                el.classList.remove("campo-ok", "campo-error");
             });
         }
 
