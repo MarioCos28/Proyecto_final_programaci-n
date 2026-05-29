@@ -40,9 +40,10 @@ def consultar_todos():
     conn.close()
     return {"inventario": [dict(zip(columnas, fila)) for fila in datos]}
 
-# ─────────────────────────────────────────────────────────
-# GET - Asignación FIFO con prioridad NUEVO → USADO
-# ─────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# GET - Consulta FIFO (solo sugiere, no modifica)
+# GET /inventario/asignar/{tipo_equipo}
+# ─────────────────────────────────────────────────────────────────────────────
 @app.get("/inventario/asignar/{tipo_equipo}")
 def asignar_equipo(tipo_equipo: str):
     conn = get_connection()
@@ -51,45 +52,30 @@ def asignar_equipo(tipo_equipo: str):
     try:
         cursor = conn.cursor()
 
-        # 1. Buscar el equipo NUEVO más antiguo (FIFO sobre NUEVOS)
-        cursor.execute("""
-            SELECT * FROM INVENTARIO_IDT
-            WHERE UPPER(TIPO_EQUIPO) = UPPER(%s)
-              AND UPPER(ESTADO) = 'NUEVO'
-            ORDER BY FECHA_REGISTRO ASC
-            LIMIT 1
-        """, (tipo_equipo,))
+        for estado in ("NUEVO", "USADO"):
+            cursor.execute("""
+                SELECT * FROM INVENTARIO_IDT
+                WHERE UPPER(TIPO_EQUIPO) = UPPER(%s)
+                  AND UPPER(ESTADO)      = %s
+                  AND (FECHA_ASIG IS NULL)          -- solo equipos sin asignar
+                ORDER BY FECHA_REGISTRO ASC
+                LIMIT 1
+            """, (tipo_equipo, estado))
 
-        columnas = [col[0] for col in cursor.description]
-        equipo   = cursor.fetchone()
+            columnas = [col[0] for col in cursor.description]
+            equipo   = cursor.fetchone()
 
-        if equipo:
-            return {
-                "metodo_usado": "FIFO - NUEVO",
-                "razon":        "Hay equipos NUEVOS. Se asigna el más antiguo en inventario.",
-                "equipo":       dict(zip(columnas, equipo))
-            }
+            if equipo:
+                return {
+                    "metodo_usado": f"FIFO - {estado}",
+                    "razon": (
+                        "Hay equipos NUEVOS sin asignar. Se sugiere el más antiguo."
+                        if estado == "NUEVO"
+                        else "No hay equipos NUEVOS. Se sugiere el USADO más antiguo."
+                    ),
+                    "equipo": dict(zip(columnas, equipo))
+                }
 
-        # 2. No hay nuevos → buscar el equipo USADO más antiguo (FIFO sobre USADOS)
-        cursor.execute("""
-            SELECT * FROM INVENTARIO_IDT
-            WHERE UPPER(TIPO_EQUIPO) = UPPER(%s)
-              AND UPPER(ESTADO) = 'USADO'
-            ORDER BY FECHA_REGISTRO ASC
-            LIMIT 1
-        """, (tipo_equipo,))
-
-        columnas = [col[0] for col in cursor.description]
-        equipo   = cursor.fetchone()
-
-        if equipo:
-            return {
-                "metodo_usado": "FIFO - USADO",
-                "razon":        "No hay equipos NUEVOS. Se asigna el USADO más antiguo en inventario.",
-                "equipo":       dict(zip(columnas, equipo))
-            }
-
-        # 3. No hay ninguno disponible
         raise HTTPException(
             status_code=404,
             detail=f"No hay equipos disponibles del tipo '{tipo_equipo}'"
@@ -98,6 +84,53 @@ def asignar_equipo(tipo_equipo: str):
     except HTTPException:
         raise
     except Exception as ex:
+        raise HTTPException(status_code=400, detail=str(ex))
+    finally:
+        conn.close()
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# POST - Confirmar asignación FIFO (marca el equipo como asignado)
+# POST /inventario/confirmar-asignacion/{id_equipo}
+# ─────────────────────────────────────────────────────────────────────────────
+@app.post("/inventario/confirmar-asignacion/{id_equipo}")
+def confirmar_asignacion(id_equipo: int, usur_ingresa: Optional[str] = None):
+    conn = get_connection()
+    if conn is None:
+        raise HTTPException(status_code=500, detail="Error de conexión")
+    try:
+        cursor = conn.cursor()
+
+        # Verificar que existe y no está ya asignado
+        cursor.execute(
+            "SELECT ID_EQUIPO, FECHA_ASIG FROM INVENTARIO_IDT WHERE ID_EQUIPO = %s",
+            (id_equipo,)
+        )
+        fila = cursor.fetchone()
+        if not fila:
+            raise HTTPException(status_code=404, detail="Equipo no encontrado")
+        if fila[1] is not None:
+            raise HTTPException(status_code=409, detail="El equipo ya fue asignado anteriormente")
+
+        # Marcar como asignado con la fecha actual
+        cursor.execute(
+            """UPDATE INVENTARIO_IDT
+               SET FECHA_ASIG   = CURRENT_DATE,
+                   USUR_INGRESA = COALESCE(%s, USUR_INGRESA)
+             WHERE ID_EQUIPO = %s""",
+            (usur_ingresa, id_equipo)
+        )
+        conn.commit()
+        return {
+            "mensaje":    "Equipo asignado correctamente",
+            "id_equipo":  id_equipo,
+            "fecha_asig": datetime.date.today().isoformat()
+        }
+
+    except HTTPException:
+        raise
+    except Exception as ex:
+        conn.rollback()
         raise HTTPException(status_code=400, detail=str(ex))
     finally:
         conn.close()
@@ -123,20 +156,137 @@ def registrar_equipo(e: Equipo):
         raise HTTPException(status_code=500, detail="Error de conexión")
     try:
         cursor = conn.cursor()
+
+        # ── Validar SERIE duplicada ──────────────────────────────────────
+        if e.serie:
+            cursor.execute(
+                "SELECT ID_EQUIPO FROM INVENTARIO_IDT WHERE UPPER(SERIE) = UPPER(%s)",
+                (e.serie,)
+            )
+            if cursor.fetchone():
+                raise HTTPException(
+                    status_code=409,
+                    detail=f"Ya existe un equipo registrado con la serie '{e.serie}'"
+                )
+
+        # ── Validar ACTIVO duplicado ─────────────────────────────────────
+        if e.activo:
+            cursor.execute(
+                "SELECT ID_EQUIPO FROM INVENTARIO_IDT WHERE UPPER(ACTIVO) = UPPER(%s)",
+                (e.activo,)
+            )
+            if cursor.fetchone():
+                raise HTTPException(
+                    status_code=409,
+                    detail=f"Ya existe un equipo registrado con el activo '{e.activo}'"
+                )
+
+        # ── Insertar ─────────────────────────────────────────────────────
         cursor.execute(
             """INSERT INTO INVENTARIO_IDT (
                 TIPO_EQUIPO, MARCA, MODELO, SERIE, ACTIVO, ESTADO,
                 CONDICION_EQUIPO, COMENTARIO, FECHA_COMPRA, FECHA_ASIG,
                 FECHA_MANTENIMIENTO, USUR_INGRESA, FOTO_EQUIPO
-            ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
+            ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+            RETURNING ID_EQUIPO""",
             (
                 e.tipo_equipo, e.marca, e.modelo, e.serie, e.activo, e.estado,
                 e.condicion_equipo, e.comentario, e.fecha_compra, e.fecha_asig,
                 e.fecha_mantenimiento, e.usur_ingresa, e.foto_equipo
             )
         )
+        nuevo_id = cursor.fetchone()[0]
         conn.commit()
-        return {"mensaje": "Equipo registrado exitosamente"}
+        return {"mensaje": "Equipo registrado exitosamente", "id_equipo": nuevo_id}
+
+    except HTTPException:
+        raise
+    except Exception as ex:
+        conn.rollback()
+        raise HTTPException(status_code=400, detail=str(ex))
+    finally:
+        conn.close()
+
+# POST - Devolver un equipo (lo mete a la Pila)
+@app.post("/inventario/devolver/{id_equipo}")
+def devolver_equipo(id_equipo: int):
+    conn = get_connection()
+    if conn is None:
+        raise HTTPException(status_code=500, detail="Error de conexión")
+    try:
+        cursor = conn.cursor()
+
+        # Verificar que el equipo existe y está asignado
+        cursor.execute(
+            "SELECT ID_EQUIPO, FECHA_ASIG FROM INVENTARIO_IDT WHERE ID_EQUIPO = %s",
+            (id_equipo,)
+        )
+        fila = cursor.fetchone()
+
+        if not fila:
+            raise HTTPException(status_code=404, detail="Equipo no encontrado")
+        if fila[1] is None:
+            raise HTTPException(status_code=409, detail="El equipo no está asignado, no se puede devolver")
+
+        # Registrar devolución: limpia FECHA_ASIG y sella FECHA_DEVOLUCION
+        cursor.execute(
+            """UPDATE INVENTARIO_IDT
+               SET FECHA_ASIG        = NULL,
+                   FECHA_DEVOLUCION  = CURRENT_TIMESTAMP
+             WHERE ID_EQUIPO = %s""",
+            (id_equipo,)
+        )
+        conn.commit()
+        return {
+            "mensaje":          "Equipo devuelto correctamente",
+            "id_equipo":        id_equipo,
+            "fecha_devolucion": datetime.datetime.now().isoformat()
+        }
+
+    except HTTPException:
+        raise
+    except Exception as ex:
+        conn.rollback()
+        raise HTTPException(status_code=400, detail=str(ex))
+    finally:
+        conn.close()
+
+# GET - Asignar desde devoluciones usando LIFO (Pila)
+@app.get("/inventario/asignar-devuelto/{tipo_equipo}")
+def asignar_devuelto(tipo_equipo: str):
+    conn = get_connection()
+    if conn is None:
+        raise HTTPException(status_code=500, detail="Error de conexión")
+    try:
+        cursor = conn.cursor()
+
+        # LIFO: el último en devolverse es el primero en salir
+        cursor.execute("""
+            SELECT * FROM INVENTARIO_IDT
+            WHERE UPPER(TIPO_EQUIPO)  = UPPER(%s)
+              AND FECHA_DEVOLUCION    IS NOT NULL   -- fue devuelto
+              AND FECHA_ASIG          IS NULL        -- no está asignado ahora
+            ORDER BY FECHA_DEVOLUCION DESC           -- ← DESC = Pila LIFO
+            LIMIT 1
+        """, (tipo_equipo,))
+
+        columnas = [col[0] for col in cursor.description]
+        equipo   = cursor.fetchone()
+
+        if equipo:
+            return {
+                "metodo_usado": "LIFO - DEVUELTO",
+                "razon":        "Se asigna el último equipo devuelto (Pila).",
+                "equipo":       dict(zip(columnas, equipo))
+            }
+
+        raise HTTPException(
+            status_code=404,
+            detail=f"No hay equipos devueltos disponibles del tipo '{tipo_equipo}'"
+        )
+
+    except HTTPException:
+        raise
     except Exception as ex:
         raise HTTPException(status_code=400, detail=str(ex))
     finally:
