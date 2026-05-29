@@ -12,6 +12,28 @@
     <style>
         #tabla-resultados thead th { background-color: #4364EA; color: white; }
         #spinner { display: none; }
+
+        /* Paginación */
+        .pagina-btn {
+            min-width: 36px;
+            height: 36px;
+            padding: 0 10px;
+            border: 1px solid #dee2e6;
+            background: #fff;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: background .15s, color .15s;
+        }
+        .pagina-btn:hover:not(:disabled)  { background: #e9ecef; }
+        .pagina-btn.activa                { background: #4364EA; color: #fff; border-color: #4364EA; font-weight: 600; }
+        .pagina-btn:disabled              { opacity: .45; cursor: not-allowed; }
+
+        /* Badge conteo */
+        #total-registros { font-size: .85rem; }
+
+        /* Filtros card */
+        #card-filtros { border-left: 4px solid #4364EA; }
     </style>
 </head>
 <body>
@@ -34,44 +56,109 @@
 
     <div class="tab-content mt-3">
 
-        <!-- PESTAÑA 1: BÚSQUEDA -->
+        <!-- ══════════════════════════════════════════════════
+             PESTAÑA 1: BÚSQUEDA CON FILTROS
+        ══════════════════════════════════════════════════ -->
         <div id="consulta1" class="tab-pane fade show active" role="tabpanel">
-            <div class="card p-4 shadow-sm">
-                <h5>Criterios de Búsqueda</h5>
-                <div class="row mb-3">
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold">Número de Serie o Activo:</label>
-                        <input type="text" class="form-control text-uppercase" id="buscar_serie"
-                               placeholder="Ej: BR54932014MX"
-                               oninput="this.value = this.value.toUpperCase()">
+            <div class="card p-4 shadow-sm" id="card-filtros">
+                <h5 class="mb-3">Filtros de Búsqueda</h5>
+
+                <div class="row g-3 mb-3">
+                    <!-- Serie -->
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Núm. Serie</label>
+                        <input type="text" class="form-control text-uppercase" id="f-serie"
+                               placeholder="Ej: 5DC5648D"
+                               oninput="this.value=this.value.toUpperCase()">
+                    </div>
+                    <!-- Activo -->
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Núm. Activo</label>
+                        <input type="text" class="form-control text-uppercase" id="f-activo"
+                               placeholder="Ej: 009783"
+                               oninput="this.value=this.value.toUpperCase()">
+                    </div>
+                    <!-- Tipo de equipo -->
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Tipo de Equipo</label>
+                        <select class="form-control" id="f-tipo">
+                            <option value="">— Todos —</option>
+                            <option value="Laptop">Laptop</option>
+                            <option value="Monitor">Monitor</option>
+                            <option value="Cañonera">Cañonera</option>
+                            <option value="Switch">Switch</option>
+                            <option value="Otros">Otros</option>
+                        </select>
+                    </div>
+                    <!-- Marca -->
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Marca</label>
+                        <select class="form-control" id="f-marca">
+                            <option value="">— Todas —</option>
+                            <option value="HP">HP</option>
+                            <option value="DELL">DELL</option>
+                            <option value="LENOVO">LENOVO</option>
+                            <option value="SAMSUNG">SAMSUNG</option>
+                            <option value="EPSON">EPSON</option>
+                            <option value="FORTINET">FORTINET</option>
+                            <option value="OTROS">OTROS</option>
+                        </select>
                     </div>
                 </div>
+
                 <div id="spinner" class="mb-2">
                     <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
                     <span class="ms-2 text-muted">Buscando...</span>
                 </div>
-                <div class="d-flex gap-2">
-                    <button type="button" onclick="buscarEquipo()" class="btn btn-primary">🔍 Buscar Equipo</button>
-                    <button type="button" onclick="verTodos()" class="btn btn-secondary">📋 Ver todos</button>
+
+                <div class="d-flex gap-2 flex-wrap">
+                    <button type="button" onclick="buscarConFiltros()" class="btn btn-primary"> Buscar</button>
+                    <button type="button" onclick="verTodos()"          class="btn btn-secondary"> Ver todos</button>
+                    <button type="button" onclick="limpiarFiltros()"    class="btn btn-outline-secondary"> Limpiar filtros</button>
                 </div>
             </div>
         </div>
 
-        <!-- PESTAÑA 2: RESULTADOS -->
+        <!-- ══════════════════════════════════════════════════
+             PESTAÑA 2: RESULTADOS CON PAGINACIÓN
+        ══════════════════════════════════════════════════ -->
         <div id="resultado1" class="tab-pane fade" role="tabpanel">
             <div class="card p-4 shadow-sm">
-                <div class="d-flex justify-content-between align-items-center mb-3">
+
+                <!-- Cabecera: título + conteo + filtros activos -->
+                <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
                     <h5 class="mb-0">Equipos Encontrados</h5>
-                    <span id="total-registros" class="badge bg-primary fs-6"></span>
+                    <div class="d-flex align-items-center gap-2">
+                        <span id="total-registros" class="badge bg-primary"></span>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="volverBusqueda()">← Volver a filtros</button>
+                    </div>
                 </div>
+
+                <!-- Resumen de filtros aplicados -->
+                <div id="filtros-aplicados" class="mb-3 text-muted small"></div>
+
+                <!-- Selector de filas por página -->
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <label class="mb-0 text-muted small">Mostrar</label>
+                    <select class="form-select form-select-sm" style="width:75px" id="filas-por-pagina"
+                            onchange="cambiarFilasPorPagina()">
+                        <option value="10" selected>10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                    </select>
+                    <span class="text-muted small">registros por página</span>
+                </div>
+
                 <div class="table-responsive">
                     <table class="table table-bordered table-hover" id="tabla-resultados">
                         <thead>
                             <tr>
                                 <th>ID</th>
+                                <th>Tipo</th>
                                 <th>Marca</th>
                                 <th>Modelo</th>
-                                <th>Activo</th>
+                                <th>Núm. Serie</th>
+                                <th>Núm. Activo</th>
                                 <th>Estado</th>
                                 <th>Detalle</th>
                             </tr>
@@ -79,13 +166,21 @@
                         <tbody id="cuerpo-tabla"></tbody>
                     </table>
                 </div>
-                <button type="button" onclick="volverBusqueda()" class="btn btn-secondary mt-2">← Volver</button>
+
+                <!-- Paginación -->
+                <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+                    <span id="info-pagina" class="text-muted small"></span>
+                    <div id="controles-paginacion" class="d-flex gap-1 flex-wrap"></div>
+                </div>
+
             </div>
         </div>
     </div>
 </div>
 
-<!-- MODAL: VER DETALLE / EDITAR -->
+<!-- ══════════════════════════════════════════════════
+     MODAL: VER DETALLE / EDITAR
+══════════════════════════════════════════════════ -->
 <div class="modal fade" id="modalDetalle" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
@@ -189,13 +284,12 @@
             <!-- BOTONES DEL MODAL -->
             <div class="modal-footer">
                 <div id="botones-detalle" class="w-100 d-flex gap-2">
-                    <button type="button" class="btn btn-warning" onclick="activarEdicion()">✏️ Modificar</button>
-                    <button type="button" class="btn btn-danger" onclick="eliminarEquipo()">🗑️ Eliminar</button>
-                    <button type="button" class="btn btn-secondary ms-auto" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-outline-warning" onclick="activarEdicion()">✏️ Modificar</button>
+                    <button type="button" class="btn btn-outline-danger"  onclick="eliminarEquipo()">🗑️ Eliminar</button>
                 </div>
                 <div id="botones-edicion" class="w-100 d-flex gap-2" style="display:none !important;">
-                    <button type="button" class="btn btn-success" onclick="guardarCambios()">💾 Guardar cambios</button>
-                    <button type="button" class="btn btn-secondary" onclick="cancelarEdicion()">✖ Cancelar</button>
+                    <button type="button" class="btn btn-outline-success"    onclick="guardarCambios()">💾 Guardar cambios</button>
+                    <button type="button" class="btn btn-outline-secondary"  onclick="cancelarEdicion()">✖ Cancelar</button>
                 </div>
             </div>
         </div>
@@ -204,22 +298,45 @@
 
 <script>
     const API_URL = "http://127.0.0.1:8000";
-    let equipoActual = null;
+    let equipoActual   = null;
+    let resultadosFull = [];   // todos los registros filtrados
+    let paginaActual   = 1;
+    let filasPorPagina = 10;
 
-    async function buscarEquipo() {
-        const valor = document.getElementById("buscar_serie").value.trim();
-        if (!valor) { swal("Atención", "Ingresa un número de serie o activo", "warning"); return; }
+    // ══════════════════════════════════════════════════
+    //  BÚSQUEDA CON FILTROS
+    // ══════════════════════════════════════════════════
+    async function buscarConFiltros() {
+        const fSerie = document.getElementById("f-serie").value.trim();
+        const fActivo= document.getElementById("f-activo").value.trim();
+        const fTipo  = document.getElementById("f-tipo").value;
+        const fMarca = document.getElementById("f-marca").value;
+
+        // Al menos un filtro debe estar activo
+        if (!fSerie && !fActivo && !fTipo && !fMarca) {
+            swal("Atención", "Ingresa al menos un criterio de búsqueda.", "warning");
+            return;
+        }
+
         mostrarSpinner(true);
         try {
             const res  = await fetch(`${API_URL}/inventario`);
             const data = await res.json();
-            const resultados = data.inventario.filter(e =>
-                (e.serie  && e.serie.toUpperCase().includes(valor)) ||
-                (e.activo && e.activo.toUpperCase().includes(valor))
-            );
-            resultados.length === 0
-                ? swal("Sin resultados", "No se encontró ningún equipo.", "info")
-                : pintarTabla(resultados);
+
+            const resultados = data.inventario.filter(e => {
+                const okSerie  = !fSerie  || (e.serie  && e.serie.toUpperCase().includes(fSerie.toUpperCase()));
+                const okActivo = !fActivo || (e.activo && e.activo.toUpperCase().includes(fActivo.toUpperCase()));
+                const okTipo   = !fTipo   || (e.tipo_equipo && e.tipo_equipo.toUpperCase() === fTipo.toUpperCase());
+                const okMarca  = !fMarca  || (e.marca && e.marca.toUpperCase() === fMarca.toUpperCase());
+                return okSerie && okActivo && okTipo && okMarca;
+            });
+
+            if (resultados.length === 0) {
+                swal("Sin resultados", "No se encontró ningún equipo con esos filtros.", "info");
+            } else {
+                mostrarResumenFiltros({ fSerie, fActivo, fTipo, fMarca });
+                iniciarPaginacion(resultados);
+            }
         } catch { swal("Error", "No se pudo conectar con la API.", "error"); }
         mostrarSpinner(false);
     }
@@ -229,37 +346,146 @@
         try {
             const res  = await fetch(`${API_URL}/inventario`);
             const data = await res.json();
-            data.inventario.length === 0
-                ? swal("Sin registros", "No hay equipos aún.", "info")
-                : pintarTabla(data.inventario);
+            if (data.inventario.length === 0) {
+                swal("Sin registros", "No hay equipos aún.", "info");
+            } else {
+                document.getElementById("filtros-aplicados").innerHTML = "";
+                iniciarPaginacion(data.inventario);
+            }
         } catch { swal("Error", "No se pudo conectar con la API.", "error"); }
         mostrarSpinner(false);
     }
 
-    function pintarTabla(equipos) {
-        const tbody = document.getElementById("cuerpo-tabla");
-        tbody.innerHTML = "";
-        equipos.forEach(e => {
-            tbody.innerHTML += `
-                <tr>
-                    <td>${e.id_equipo ?? "-"}</td>
-                    <td>${e.marca ?? "-"}</td>
-                    <td>${e.modelo ?? "-"}</td>
-                    <td>${e.activo ?? "-"}</td>
-                    <td>${e.estado ?? "-"}</td>
-                    <td>
-                        <button class="btn btn-sm btn-primary" onclick='abrirDetalle(${JSON.stringify(e)})'>
-                            👁 Ver detalle
-                        </button>
-                    </td>
-                </tr>`;
-        });
-        document.getElementById("total-registros").textContent = `${equipos.length} registro(s)`;
+    function limpiarFiltros() {
+        document.getElementById("f-serie").value  = "";
+        document.getElementById("f-activo").value = "";
+        document.getElementById("f-tipo").value   = "";
+        document.getElementById("f-marca").value  = "";
+    }
+
+    // ══════════════════════════════════════════════════
+    //  PAGINACIÓN
+    // ══════════════════════════════════════════════════
+    function iniciarPaginacion(datos) {
+        resultadosFull = datos;
+        paginaActual   = 1;
+        filasPorPagina = parseInt(document.getElementById("filas-por-pagina").value);
+        renderPagina();
         const btn = document.getElementById("tab-resultados");
         btn.removeAttribute("disabled");
         bootstrap.Tab.getOrCreateInstance(btn).show();
     }
 
+    function renderPagina() {
+        const total     = resultadosFull.length;
+        const totalPags = Math.ceil(total / filasPorPagina);
+        const inicio    = (paginaActual - 1) * filasPorPagina;
+        const fin       = Math.min(inicio + filasPorPagina, total);
+        const pagina    = resultadosFull.slice(inicio, fin);
+
+        // Tabla
+        const tbody = document.getElementById("cuerpo-tabla");
+        tbody.innerHTML = "";
+        pagina.forEach(e => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${e.id_equipo      ?? "-"}</td>
+                    <td>${e.tipo_equipo    ?? "-"}</td>
+                    <td>${e.marca          ?? "-"}</td>
+                    <td>${e.modelo         ?? "-"}</td>
+                    <td>${e.serie          ?? "-"}</td>
+                    <td>${e.activo         ?? "-"}</td>
+                    <td>${e.estado         ?? "-"}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick='abrirDetalle(${JSON.stringify(e)})'>
+                             Ver detalle
+                        </button>
+                    </td>
+                </tr>`;
+        });
+
+        // Badge total
+        document.getElementById("total-registros").textContent = `${total} registro(s)`;
+
+        // Info de página
+        document.getElementById("info-pagina").textContent =
+            `Mostrando ${inicio + 1}–${fin} de ${total} registros`;
+
+        // Controles de paginación
+        renderControlesPaginacion(totalPags);
+    }
+
+    function renderControlesPaginacion(totalPags) {
+        const cont = document.getElementById("controles-paginacion");
+        cont.innerHTML = "";
+
+        const crearBtn = (texto, pagina, deshabilitado = false, activa = false) => {
+            const btn = document.createElement("button");
+            btn.className   = "pagina-btn" + (activa ? " activa" : "");
+            btn.textContent = texto;
+            btn.disabled    = deshabilitado;
+            btn.onclick     = () => { paginaActual = pagina; renderPagina(); };
+            return btn;
+        };
+
+        // Anterior
+        cont.appendChild(crearBtn("«", paginaActual - 1, paginaActual === 1));
+
+        // Páginas con ventana deslizante (máx 5 botones visibles)
+        const rango = 2;
+        let desde = Math.max(1, paginaActual - rango);
+        let hasta  = Math.min(totalPags, paginaActual + rango);
+
+        if (desde > 1) {
+            cont.appendChild(crearBtn("1", 1));
+            if (desde > 2) {
+                const sep = document.createElement("span");
+                sep.textContent = "…";
+                sep.className   = "px-1 text-muted align-self-center";
+                cont.appendChild(sep);
+            }
+        }
+
+        for (let p = desde; p <= hasta; p++) {
+            cont.appendChild(crearBtn(p, p, false, p === paginaActual));
+        }
+
+        if (hasta < totalPags) {
+            if (hasta < totalPags - 1) {
+                const sep = document.createElement("span");
+                sep.textContent = "…";
+                sep.className   = "px-1 text-muted align-self-center";
+                cont.appendChild(sep);
+            }
+            cont.appendChild(crearBtn(totalPags, totalPags));
+        }
+
+        // Siguiente
+        cont.appendChild(crearBtn("»", paginaActual + 1, paginaActual === totalPags));
+    }
+
+    function cambiarFilasPorPagina() {
+        filasPorPagina = parseInt(document.getElementById("filas-por-pagina").value);
+        paginaActual   = 1;
+        if (resultadosFull.length > 0) renderPagina();
+    }
+
+    // ══════════════════════════════════════════════════
+    //  RESUMEN DE FILTROS APLICADOS
+    // ══════════════════════════════════════════════════
+    function mostrarResumenFiltros({ fSerie, fActivo, fTipo, fMarca }) {
+        const partes = [];
+        if (fSerie)  partes.push(`Serie: <strong>${fSerie}</strong>`);
+        if (fActivo) partes.push(`Activo: <strong>${fActivo}</strong>`);
+        if (fTipo)   partes.push(`Tipo: <strong>${fTipo}</strong>`);
+        if (fMarca)  partes.push(`Marca: <strong>${fMarca}</strong>`);
+        document.getElementById("filtros-aplicados").innerHTML =
+            partes.length ? "🔍 Filtros: " + partes.join(" &nbsp;|&nbsp; ") : "";
+    }
+
+    // ══════════════════════════════════════════════════
+    //  MODAL DETALLE / EDICIÓN
+    // ══════════════════════════════════════════════════
     function abrirDetalle(equipo) {
         equipoActual = equipo;
         document.getElementById("d-id").textContent           = equipo.id_equipo            ?? "-";
@@ -332,9 +558,9 @@
         };
         try {
             const res = await fetch(`${API_URL}/inventario/${id}`, {
-                method: "PUT",
+                method:  "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
+                body:    JSON.stringify(payload)
             });
             if (res.ok) {
                 bootstrap.Modal.getInstance(document.getElementById("modalDetalle")).hide();
@@ -351,8 +577,8 @@
         const id = equipoActual.id_equipo;
         swal({
             title: "¿Eliminar este equipo?",
-            text: "Esta acción no se puede deshacer.",
-            icon: "warning",
+            text:  "Esta acción no se puede deshacer.",
+            icon:  "warning",
             buttons: { cancel: "Cancelar", confirm: { text: "Sí, eliminar", className: "btn-danger" } }
         }).then(async (confirm) => {
             if (!confirm) return;
@@ -361,7 +587,16 @@
                 if (res.ok) {
                     bootstrap.Modal.getInstance(document.getElementById("modalDetalle")).hide();
                     swal("¡Eliminado!", "El equipo fue eliminado correctamente.", "success");
-                    verTodos();
+                    // Quitar de la lista local y re-renderizar sin volver a la API
+                    resultadosFull = resultadosFull.filter(e => e.id_equipo !== id);
+                    if (paginaActual > Math.ceil(resultadosFull.length / filasPorPagina)) {
+                        paginaActual = Math.max(1, paginaActual - 1);
+                    }
+                    if (resultadosFull.length === 0) {
+                        volverBusqueda();
+                    } else {
+                        renderPagina();
+                    }
                 } else {
                     swal("Error", "No se pudo eliminar el equipo.", "error");
                 }
@@ -369,14 +604,21 @@
         });
     }
 
+    // ══════════════════════════════════════════════════
+    //  UTILIDADES
+    // ══════════════════════════════════════════════════
     function volverBusqueda() {
         bootstrap.Tab.getOrCreateInstance(document.getElementById("tab-busqueda")).show();
     }
     function mostrarSpinner(v) {
         document.getElementById("spinner").style.display = v ? "block" : "none";
     }
-    document.getElementById("buscar_serie").addEventListener("keypress", e => {
-        if (e.key === "Enter") buscarEquipo();
+
+    // Enter en cualquier campo de filtro dispara la búsqueda
+    ["f-serie","f-activo"].forEach(id => {
+        document.getElementById(id).addEventListener("keypress", e => {
+            if (e.key === "Enter") buscarConFiltros();
+        });
     });
 </script>
 </body>
