@@ -209,40 +209,45 @@ def registrar_equipo(e: Equipo):
 
 # POST - Devolver un equipo (lo mete a la Pila)
 @app.post("/inventario/devolver/{id_equipo}")
-def devolver_equipo(id_equipo: int):
+def devolver_equipo(
+    id_equipo: int,
+    fecha_devolucion: Optional[datetime.date] = None   # ← parámetro nuevo (query param)
+):
     conn = get_connection()
     if conn is None:
         raise HTTPException(status_code=500, detail="Error de conexión")
     try:
         cursor = conn.cursor()
-
-        # Verificar que el equipo existe y está asignado
+ 
+        # Verificar que el equipo existe
         cursor.execute(
             "SELECT ID_EQUIPO, FECHA_ASIG FROM INVENTARIO_IDT WHERE ID_EQUIPO = %s",
             (id_equipo,)
         )
         fila = cursor.fetchone()
-
         if not fila:
             raise HTTPException(status_code=404, detail="Equipo no encontrado")
-        if fila[1] is None:
-            raise HTTPException(status_code=409, detail="El equipo no está asignado, no se puede devolver")
-
-        # Registrar devolución: limpia FECHA_ASIG y sella FECHA_DEVOLUCION
+ 
+        # Advertencia si no estaba asignado, pero se permite continuar
+        # (el HTML ya muestra el warning al usuario antes de confirmar)
+ 
+        # Si no se envió fecha manual, usar la fecha/hora actual
+        fecha_real = fecha_devolucion if fecha_devolucion else datetime.date.today()
+ 
         cursor.execute(
             """UPDATE INVENTARIO_IDT
-               SET FECHA_ASIG        = NULL,
-                   FECHA_DEVOLUCION  = CURRENT_TIMESTAMP
+               SET FECHA_ASIG       = NULL,
+                   FECHA_DEVOLUCION = %s
              WHERE ID_EQUIPO = %s""",
-            (id_equipo,)
+            (fecha_real, id_equipo)
         )
         conn.commit()
         return {
             "mensaje":          "Equipo devuelto correctamente",
             "id_equipo":        id_equipo,
-            "fecha_devolucion": datetime.datetime.now().isoformat()
+            "fecha_devolucion": str(fecha_real)
         }
-
+ 
     except HTTPException:
         raise
     except Exception as ex:

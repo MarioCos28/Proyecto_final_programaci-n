@@ -4,41 +4,32 @@
     <title>CONSULTA DE EQUIPO</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
-
     <style>
-        #tabla-resultados thead th { background-color: #4364EA; color: white; }
-        #spinner { display: none; }
-
-        /* Paginación */
+        #tabla-resultados thead th  { background-color: #4364EA; color: white; }
+        #tabla-devoluciones thead th { background-color: #198754; color: white; }
+        #spinner, #spinner-dev      { display: none; }
+ 
         .pagina-btn {
-            min-width: 36px;
-            height: 36px;
-            padding: 0 10px;
-            border: 1px solid #dee2e6;
-            background: #fff;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.875rem;
-            transition: background .15s, color .15s;
+            min-width: 36px; height: 36px; padding: 0 10px;
+            border: 1px solid #dee2e6; background: #fff;
+            border-radius: 6px; cursor: pointer;
+            font-size: 0.875rem; transition: background .15s, color .15s;
         }
-        .pagina-btn:hover:not(:disabled)  { background: #e9ecef; }
-        .pagina-btn.activa                { background: #4364EA; color: #fff; border-color: #4364EA; font-weight: 600; }
-        .pagina-btn:disabled              { opacity: .45; cursor: not-allowed; }
-
-        /* Badge conteo */
-        #total-registros { font-size: .85rem; }
-
-        /* Filtros card */
-        #card-filtros { border-left: 4px solid #4364EA; }
+        .pagina-btn:hover:not(:disabled) { background: #e9ecef; }
+        .pagina-btn.activa               { background: #4364EA; color: #fff; border-color: #4364EA; font-weight: 600; }
+        .pagina-btn:disabled             { opacity: .45; cursor: not-allowed; }
+        #total-registros  { font-size: .85rem; }
+        #total-devoluciones { font-size: .85rem; }
+        #card-filtros     { border-left: 4px solid #4364EA; }
+        #card-devolucion  { border-left: 4px solid #198754; }
     </style>
 </head>
 <body>
 <div class="container-fluid mt-4">
-
+ 
     <ul class="nav nav-tabs nav-justified" id="tabsConsulta" role="tablist">
         <li class="nav-item">
             <button class="nav-link active" id="tab-busqueda"
@@ -52,33 +43,42 @@
                 Resultados
             </button>
         </li>
+        <!-- ★ NUEVA PESTAÑA DEVOLUCIONES -->
+        <li class="nav-item">
+            <button class="nav-link" id="tab-devolucion"
+                    data-bs-toggle="tab" data-bs-target="#devolucion1" type="button" role="tab">
+                📦 Pila de Devoluciones
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" id="tab-pila-registros"
+                    data-bs-toggle="tab" data-bs-target="#pila-registros1" type="button" role="tab" disabled>
+                📋 Registros de Pila
+            </button>
+        </li>
     </ul>
-
+ 
     <div class="tab-content mt-3">
-
+ 
         <!-- ══════════════════════════════════════════════════
              PESTAÑA 1: BÚSQUEDA CON FILTROS
         ══════════════════════════════════════════════════ -->
         <div id="consulta1" class="tab-pane fade show active" role="tabpanel">
             <div class="card p-4 shadow-sm" id="card-filtros">
                 <h5 class="mb-3">Filtros de Búsqueda</h5>
-
                 <div class="row g-3 mb-3">
-                    <!-- Serie -->
                     <div class="col-md-3">
                         <label class="form-label fw-bold">Núm. Serie</label>
                         <input type="text" class="form-control text-uppercase" id="f-serie"
                                placeholder="Ej: 5DC5648D"
                                oninput="this.value=this.value.toUpperCase()">
                     </div>
-                    <!-- Activo -->
                     <div class="col-md-3">
                         <label class="form-label fw-bold">Núm. Activo</label>
                         <input type="text" class="form-control text-uppercase" id="f-activo"
                                placeholder="Ej: 009783"
                                oninput="this.value=this.value.toUpperCase()">
                     </div>
-                    <!-- Tipo de equipo -->
                     <div class="col-md-3">
                         <label class="form-label fw-bold">Tipo de Equipo</label>
                         <select class="form-control" id="f-tipo">
@@ -90,7 +90,6 @@
                             <option value="Otros">Otros</option>
                         </select>
                     </div>
-                    <!-- Marca -->
                     <div class="col-md-3">
                         <label class="form-label fw-bold">Marca</label>
                         <select class="form-control" id="f-marca">
@@ -105,27 +104,23 @@
                         </select>
                     </div>
                 </div>
-
                 <div id="spinner" class="mb-2">
                     <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
                     <span class="ms-2 text-muted">Buscando...</span>
                 </div>
-
                 <div class="d-flex gap-2 flex-wrap">
-                    <button type="button" onclick="buscarConFiltros()" class="btn btn-primary"> Buscar</button>
-                    <button type="button" onclick="verTodos()"          class="btn btn-secondary"> Ver todos</button>
-                    <button type="button" onclick="limpiarFiltros()"    class="btn btn-outline-secondary"> Limpiar filtros</button>
+                    <button type="button" onclick="buscarConFiltros()" class="btn btn-primary">Buscar</button>
+                    <button type="button" onclick="verTodos()"          class="btn btn-secondary">Ver todos</button>
+                    <button type="button" onclick="limpiarFiltros()"    class="btn btn-outline-secondary">Limpiar filtros</button>
                 </div>
             </div>
         </div>
-
+ 
         <!-- ══════════════════════════════════════════════════
              PESTAÑA 2: RESULTADOS CON PAGINACIÓN
         ══════════════════════════════════════════════════ -->
         <div id="resultado1" class="tab-pane fade" role="tabpanel">
             <div class="card p-4 shadow-sm">
-
-                <!-- Cabecera: título + conteo + filtros activos -->
                 <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
                     <h5 class="mb-0">Equipos Encontrados</h5>
                     <div class="d-flex align-items-center gap-2">
@@ -133,11 +128,7 @@
                         <button class="btn btn-sm btn-outline-secondary" onclick="volverBusqueda()">← Volver a filtros</button>
                     </div>
                 </div>
-
-                <!-- Resumen de filtros aplicados -->
                 <div id="filtros-aplicados" class="mb-3 text-muted small"></div>
-
-                <!-- Selector de filas por página -->
                 <div class="d-flex align-items-center gap-2 mb-3">
                     <label class="mb-0 text-muted small">Mostrar</label>
                     <select class="form-select form-select-sm" style="width:75px" id="filas-por-pagina"
@@ -148,7 +139,6 @@
                     </select>
                     <span class="text-muted small">registros por página</span>
                 </div>
-
                 <div class="table-responsive">
                     <table class="table table-bordered table-hover" id="tabla-resultados">
                         <thead>
@@ -166,18 +156,162 @@
                         <tbody id="cuerpo-tabla"></tbody>
                     </table>
                 </div>
-
-                <!-- Paginación -->
                 <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
                     <span id="info-pagina" class="text-muted small"></span>
                     <div id="controles-paginacion" class="d-flex gap-1 flex-wrap"></div>
                 </div>
-
             </div>
         </div>
-    </div>
-</div>
-
+ 
+        <!-- ══════════════════════════════════════════════════
+             PESTAÑA 3: PILA DE DEVOLUCIONES  ★ NUEVA
+        ══════════════════════════════════════════════════ -->
+        <div id="devolucion1" class="tab-pane fade" role="tabpanel">
+            <div class="card p-4 shadow-sm" id="card-devolucion">
+                <h5 class="mb-1 text-success">📦 Registrar Devolución de Equipo</h5>
+                <p class="text-muted small mb-3">
+                    Identifica el equipo por su Núm. Activo y/o Núm. Serie, ingresa la fecha
+                    de devolución y confirma. El equipo se agregará a la <strong>Pila LIFO</strong>.
+                </p>
+ 
+                <div class="row g-3 mb-3">
+                    <!-- Búsqueda por activo -->
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Núm. Activo <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <input type="text" class="form-control text-uppercase" id="dev-activo"
+                                   placeholder="Ej: 009783"
+                                   oninput="this.value=this.value.toUpperCase()">
+                            <button class="btn btn-outline-success" type="button" onclick="buscarParaDevolucion()">
+                                🔍 Buscar
+                            </button>
+                        </div>
+                        <div class="form-text">O ingresa la serie para identificar el equipo.</div>
+                    </div>
+                    <!-- Búsqueda por serie -->
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Núm. Serie</label>
+                        <input type="text" class="form-control text-uppercase" id="dev-serie"
+                               placeholder="Ej: 5DC5648D"
+                               oninput="this.value=this.value.toUpperCase()">
+                    </div>
+                    <!-- Fecha devolución manual -->
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Fecha de Devolución <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="dev-fecha">
+                    </div>
+                </div>
+ 
+                <!-- Spinner búsqueda -->
+                <div id="spinner-dev" class="mb-2">
+                    <div class="spinner-border spinner-border-sm text-success" role="status"></div>
+                    <span class="ms-2 text-muted">Buscando equipo...</span>
+                </div>
+ 
+                <!-- Tarjeta de previsualización del equipo encontrado -->
+                <div id="dev-preview" class="alert alert-success d-none mb-3">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="alert-heading mb-1">✅ Equipo encontrado</h6>
+                            <div class="row g-2 mt-1">
+                                <div class="col-6 col-md-3"><strong>ID:</strong> <span id="pv-id"></span></div>
+                                <div class="col-6 col-md-3"><strong>Tipo:</strong> <span id="pv-tipo"></span></div>
+                                <div class="col-6 col-md-3"><strong>Marca:</strong> <span id="pv-marca"></span></div>
+                                <div class="col-6 col-md-3"><strong>Modelo:</strong> <span id="pv-modelo"></span></div>
+                                <div class="col-6 col-md-3"><strong>Serie:</strong> <span id="pv-serie"></span></div>
+                                <div class="col-6 col-md-3"><strong>Activo:</strong> <span id="pv-activo"></span></div>
+                                <div class="col-6 col-md-3"><strong>Estado:</strong> <span id="pv-estado"></span></div>
+                                <div class="col-6 col-md-3"><strong>Fecha asig.:</strong> <span id="pv-fecha-asig"></span></div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close" onclick="limpiarDevolucion()"></button>
+                    </div>
+                </div>
+ 
+                <!-- Alerta si el equipo NO está asignado -->
+                <div id="dev-alerta-noasig" class="alert alert-warning d-none mb-3">
+                    ⚠️ <strong>Atención:</strong> Este equipo no tiene fecha de asignación registrada.
+                    Igualmente puedes registrar la devolución si corresponde.
+                </div>
+ 
+                <!-- Botón confirmar devolución -->
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-success" id="btn-confirmar-dev"
+                            onclick="confirmarDevolucion()" disabled>
+                        ✔ Confirmar Devolución
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="limpiarDevolucion()">
+                        ✖ Limpiar
+                    </button>
+                    <button type="button" class="btn btn-outline-primary ms-auto"
+                            onclick="verPilaRegistros()">
+                        📋 Ver registros de pila →
+                    </button>
+                </div>
+            </div>
+        </div>
+ 
+        <!-- ══════════════════════════════════════════════════
+             PESTAÑA 4: REGISTROS DE LA PILA (LIFO)  ★ NUEVA
+        ══════════════════════════════════════════════════ -->
+        <div id="pila-registros1" class="tab-pane fade" role="tabpanel">
+            <div class="card p-4 shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                    <div>
+                        <h5 class="mb-0">📋 Equipos en Pila de Devoluciones</h5>
+                        <p class="text-muted small mb-0 mt-1">
+                            Ordenados por fecha de devolución más reciente (LIFO).
+                            Solo equipos devueltos y no reasignados.
+                        </p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span id="total-devoluciones" class="badge bg-success"></span>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="volverDevolucion()">← Volver</button>
+                        <button class="btn btn-sm btn-success" onclick="verPilaRegistros()">🔄 Actualizar</button>
+                    </div>
+                </div>
+                <!-- Filtro por tipo en la pila -->
+                <div class="row g-2 mb-3">
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small">Filtrar por tipo</label>
+                        <select class="form-select form-select-sm" id="pila-filtro-tipo" onchange="filtrarPila()">
+                            <option value="">— Todos —</option>
+                            <option value="Laptop">Laptop</option>
+                            <option value="Monitor">Monitor</option>
+                            <option value="Cañonera">Cañonera</option>
+                            <option value="Switch">Switch</option>
+                            <option value="Otros">Otros</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover" id="tabla-devoluciones">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Tipo</th>
+                                <th>Marca</th>
+                                <th>Modelo</th>
+                                <th>Núm. Serie</th>
+                                <th>Núm. Activo</th>
+                                <th>Estado</th>
+                                <th>Fecha Devolución</th>
+                                <th>Posición en Pila</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cuerpo-tabla-dev"></tbody>
+                    </table>
+                </div>
+                <div id="pila-vacia" class="text-center text-muted py-4 d-none">
+                    <p>📭 No hay equipos devueltos en la pila actualmente.</p>
+                </div>
+            </div>
+        </div>
+ 
+    </div><!-- /tab-content -->
+</div><!-- /container -->
+ 
+ 
 <!-- ══════════════════════════════════════════════════
      MODAL: VER DETALLE / EDITAR
 ══════════════════════════════════════════════════ -->
@@ -189,7 +323,6 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-
                 <!-- VISTA SOLO LECTURA -->
                 <div id="vista-detalle">
                     <div class="row g-3">
@@ -208,7 +341,6 @@
                         <div class="col-md-12"><label class="fw-bold">Comentario:</label><p id="d-comentario"></p></div>
                     </div>
                 </div>
-
                 <!-- VISTA EDICIÓN -->
                 <div id="vista-edicion" style="display:none;">
                     <div class="row g-3">
@@ -275,54 +407,53 @@
                         </div>
                         <div class="col-md-12">
                             <label class="fw-bold">Comentario</label>
-                            <textarea class="form-control text-uppercase" id="e-comentario" rows="2" oninput="this.value=this.value.toUpperCase()"></textarea>
+                            <textarea class="form-control text-uppercase" id="e-comentario" rows="2"
+                                      oninput="this.value=this.value.toUpperCase()"></textarea>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <!-- BOTONES DEL MODAL -->
             <div class="modal-footer">
                 <div id="botones-detalle" class="w-100 d-flex gap-2">
                     <button type="button" class="btn btn-outline-warning" onclick="activarEdicion()">✏️ Modificar</button>
                     <button type="button" class="btn btn-outline-danger"  onclick="eliminarEquipo()">🗑️ Eliminar</button>
                 </div>
                 <div id="botones-edicion" class="w-100 d-flex gap-2" style="display:none !important;">
-                    <button type="button" class="btn btn-outline-success"    onclick="guardarCambios()">💾 Guardar cambios</button>
-                    <button type="button" class="btn btn-outline-secondary"  onclick="cancelarEdicion()">✖ Cancelar</button>
+                    <button type="button" class="btn btn-outline-success"   onclick="guardarCambios()">💾 Guardar cambios</button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="cancelarEdicion()">✖ Cancelar</button>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
+ 
+ 
 <script>
     const API_URL = "http://127.0.0.1:8000";
-    let equipoActual   = null;
-    let resultadosFull = [];   // todos los registros filtrados
-    let paginaActual   = 1;
-    let filasPorPagina = 10;
-
+    let equipoActual    = null;
+    let resultadosFull  = [];
+    let pilaFull        = [];        // ★ todos los equipos devueltos
+    let equipoDevolucion = null;     // ★ equipo encontrado para devolver
+    let paginaActual    = 1;
+    let filasPorPagina  = 10;
+ 
     // ══════════════════════════════════════════════════
-    //  BÚSQUEDA CON FILTROS
+    //  BÚSQUEDA CON FILTROS  (sin cambios)
     // ══════════════════════════════════════════════════
     async function buscarConFiltros() {
-        const fSerie = document.getElementById("f-serie").value.trim();
-        const fActivo= document.getElementById("f-activo").value.trim();
-        const fTipo  = document.getElementById("f-tipo").value;
-        const fMarca = document.getElementById("f-marca").value;
-
-        // Al menos un filtro debe estar activo
+        const fSerie  = document.getElementById("f-serie").value.trim();
+        const fActivo = document.getElementById("f-activo").value.trim();
+        const fTipo   = document.getElementById("f-tipo").value;
+        const fMarca  = document.getElementById("f-marca").value;
+ 
         if (!fSerie && !fActivo && !fTipo && !fMarca) {
             swal("Atención", "Ingresa al menos un criterio de búsqueda.", "warning");
             return;
         }
-
         mostrarSpinner(true);
         try {
             const res  = await fetch(`${API_URL}/inventario`);
             const data = await res.json();
-
             const resultados = data.inventario.filter(e => {
                 const okSerie  = !fSerie  || (e.serie  && e.serie.toUpperCase().includes(fSerie.toUpperCase()));
                 const okActivo = !fActivo || (e.activo && e.activo.toUpperCase().includes(fActivo.toUpperCase()));
@@ -330,7 +461,6 @@
                 const okMarca  = !fMarca  || (e.marca && e.marca.toUpperCase() === fMarca.toUpperCase());
                 return okSerie && okActivo && okTipo && okMarca;
             });
-
             if (resultados.length === 0) {
                 swal("Sin resultados", "No se encontró ningún equipo con esos filtros.", "info");
             } else {
@@ -340,7 +470,7 @@
         } catch { swal("Error", "No se pudo conectar con la API.", "error"); }
         mostrarSpinner(false);
     }
-
+ 
     async function verTodos() {
         mostrarSpinner(true);
         try {
@@ -355,16 +485,16 @@
         } catch { swal("Error", "No se pudo conectar con la API.", "error"); }
         mostrarSpinner(false);
     }
-
+ 
     function limpiarFiltros() {
         document.getElementById("f-serie").value  = "";
         document.getElementById("f-activo").value = "";
         document.getElementById("f-tipo").value   = "";
         document.getElementById("f-marca").value  = "";
     }
-
+ 
     // ══════════════════════════════════════════════════
-    //  PAGINACIÓN
+    //  PAGINACIÓN  (sin cambios)
     // ══════════════════════════════════════════════════
     function iniciarPaginacion(datos) {
         resultadosFull = datos;
@@ -375,50 +505,44 @@
         btn.removeAttribute("disabled");
         bootstrap.Tab.getOrCreateInstance(btn).show();
     }
-
+ 
     function renderPagina() {
         const total     = resultadosFull.length;
         const totalPags = Math.ceil(total / filasPorPagina);
         const inicio    = (paginaActual - 1) * filasPorPagina;
         const fin       = Math.min(inicio + filasPorPagina, total);
         const pagina    = resultadosFull.slice(inicio, fin);
-
-        // Tabla
+ 
         const tbody = document.getElementById("cuerpo-tabla");
         tbody.innerHTML = "";
         pagina.forEach(e => {
             tbody.innerHTML += `
                 <tr>
-                    <td>${e.id_equipo      ?? "-"}</td>
-                    <td>${e.tipo_equipo    ?? "-"}</td>
-                    <td>${e.marca          ?? "-"}</td>
-                    <td>${e.modelo         ?? "-"}</td>
-                    <td>${e.serie          ?? "-"}</td>
-                    <td>${e.activo         ?? "-"}</td>
-                    <td>${e.estado         ?? "-"}</td>
+                    <td>${e.id_equipo   ?? "-"}</td>
+                    <td>${e.tipo_equipo ?? "-"}</td>
+                    <td>${e.marca       ?? "-"}</td>
+                    <td>${e.modelo      ?? "-"}</td>
+                    <td>${e.serie       ?? "-"}</td>
+                    <td>${e.activo      ?? "-"}</td>
+                    <td>${e.estado      ?? "-"}</td>
                     <td>
-                        <button class="btn btn-sm btn-primary" onclick='abrirDetalle(${JSON.stringify(e)})'>
-                             Ver detalle
+                        <button class="btn btn-sm btn-primary"
+                                onclick='abrirDetalle(${JSON.stringify(e)})'>
+                            Ver detalle
                         </button>
                     </td>
                 </tr>`;
         });
-
-        // Badge total
+ 
         document.getElementById("total-registros").textContent = `${total} registro(s)`;
-
-        // Info de página
         document.getElementById("info-pagina").textContent =
             `Mostrando ${inicio + 1}–${fin} de ${total} registros`;
-
-        // Controles de paginación
         renderControlesPaginacion(totalPags);
     }
-
+ 
     function renderControlesPaginacion(totalPags) {
         const cont = document.getElementById("controles-paginacion");
         cont.innerHTML = "";
-
         const crearBtn = (texto, pagina, deshabilitado = false, activa = false) => {
             const btn = document.createElement("button");
             btn.className   = "pagina-btn" + (activa ? " activa" : "");
@@ -427,52 +551,38 @@
             btn.onclick     = () => { paginaActual = pagina; renderPagina(); };
             return btn;
         };
-
-        // Anterior
         cont.appendChild(crearBtn("«", paginaActual - 1, paginaActual === 1));
-
-        // Páginas con ventana deslizante (máx 5 botones visibles)
         const rango = 2;
         let desde = Math.max(1, paginaActual - rango);
         let hasta  = Math.min(totalPags, paginaActual + rango);
-
         if (desde > 1) {
             cont.appendChild(crearBtn("1", 1));
             if (desde > 2) {
                 const sep = document.createElement("span");
-                sep.textContent = "…";
-                sep.className   = "px-1 text-muted align-self-center";
+                sep.textContent = "…"; sep.className = "px-1 text-muted align-self-center";
                 cont.appendChild(sep);
             }
         }
-
         for (let p = desde; p <= hasta; p++) {
             cont.appendChild(crearBtn(p, p, false, p === paginaActual));
         }
-
         if (hasta < totalPags) {
             if (hasta < totalPags - 1) {
                 const sep = document.createElement("span");
-                sep.textContent = "…";
-                sep.className   = "px-1 text-muted align-self-center";
+                sep.textContent = "…"; sep.className = "px-1 text-muted align-self-center";
                 cont.appendChild(sep);
             }
             cont.appendChild(crearBtn(totalPags, totalPags));
         }
-
-        // Siguiente
         cont.appendChild(crearBtn("»", paginaActual + 1, paginaActual === totalPags));
     }
-
+ 
     function cambiarFilasPorPagina() {
         filasPorPagina = parseInt(document.getElementById("filas-por-pagina").value);
         paginaActual   = 1;
         if (resultadosFull.length > 0) renderPagina();
     }
-
-    // ══════════════════════════════════════════════════
-    //  RESUMEN DE FILTROS APLICADOS
-    // ══════════════════════════════════════════════════
+ 
     function mostrarResumenFiltros({ fSerie, fActivo, fTipo, fMarca }) {
         const partes = [];
         if (fSerie)  partes.push(`Serie: <strong>${fSerie}</strong>`);
@@ -482,9 +592,9 @@
         document.getElementById("filtros-aplicados").innerHTML =
             partes.length ? "🔍 Filtros: " + partes.join(" &nbsp;|&nbsp; ") : "";
     }
-
+ 
     // ══════════════════════════════════════════════════
-    //  MODAL DETALLE / EDICIÓN
+    //  MODAL DETALLE / EDICIÓN  (sin cambios)
     // ══════════════════════════════════════════════════
     function abrirDetalle(equipo) {
         equipoActual = equipo;
@@ -501,15 +611,13 @@
         document.getElementById("d-fecha-mant").textContent   = equipo.fecha_mantenimiento    ?? "-";
         document.getElementById("d-usuario").textContent      = equipo.usur_ingresa           ?? "-";
         document.getElementById("d-comentario").textContent   = equipo.comentario             ?? "-";
-
         document.getElementById("vista-detalle").style.display   = "block";
         document.getElementById("vista-edicion").style.display   = "none";
         document.getElementById("botones-detalle").style.display = "flex";
         document.getElementById("botones-edicion").style.display = "none";
-
         new bootstrap.Modal(document.getElementById("modalDetalle")).show();
     }
-
+ 
     function activarEdicion() {
         const e = equipoActual;
         document.getElementById("e-id").value            = e.id_equipo;
@@ -525,20 +633,19 @@
         document.getElementById("e-fecha-mant").value    = e.fecha_mantenimiento     ?? "";
         document.getElementById("e-usuario").value       = e.usur_ingresa            ?? "";
         document.getElementById("e-comentario").value    = e.comentario              ?? "";
-
         document.getElementById("vista-detalle").style.display   = "none";
         document.getElementById("vista-edicion").style.display   = "block";
         document.getElementById("botones-detalle").style.display = "none";
         document.getElementById("botones-edicion").style.display = "flex";
     }
-
+ 
     function cancelarEdicion() {
         document.getElementById("vista-detalle").style.display   = "block";
         document.getElementById("vista-edicion").style.display   = "none";
         document.getElementById("botones-detalle").style.display = "flex";
         document.getElementById("botones-edicion").style.display = "none";
     }
-
+ 
     async function guardarCambios() {
         const id = document.getElementById("e-id").value;
         const payload = {
@@ -558,9 +665,8 @@
         };
         try {
             const res = await fetch(`${API_URL}/inventario/${id}`, {
-                method:  "PUT",
-                headers: { "Content-Type": "application/json" },
-                body:    JSON.stringify(payload)
+                method: "PUT", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
             });
             if (res.ok) {
                 bootstrap.Modal.getInstance(document.getElementById("modalDetalle")).hide();
@@ -572,7 +678,7 @@
             }
         } catch { swal("Error", "No se pudo conectar con la API.", "error"); }
     }
-
+ 
     function eliminarEquipo() {
         const id = equipoActual.id_equipo;
         swal({
@@ -587,37 +693,229 @@
                 if (res.ok) {
                     bootstrap.Modal.getInstance(document.getElementById("modalDetalle")).hide();
                     swal("¡Eliminado!", "El equipo fue eliminado correctamente.", "success");
-                    // Quitar de la lista local y re-renderizar sin volver a la API
                     resultadosFull = resultadosFull.filter(e => e.id_equipo !== id);
-                    if (paginaActual > Math.ceil(resultadosFull.length / filasPorPagina)) {
+                    if (paginaActual > Math.ceil(resultadosFull.length / filasPorPagina))
                         paginaActual = Math.max(1, paginaActual - 1);
-                    }
-                    if (resultadosFull.length === 0) {
-                        volverBusqueda();
-                    } else {
-                        renderPagina();
-                    }
+                    if (resultadosFull.length === 0) volverBusqueda();
+                    else renderPagina();
                 } else {
                     swal("Error", "No se pudo eliminar el equipo.", "error");
                 }
             } catch { swal("Error", "No se pudo conectar con la API.", "error"); }
         });
     }
-
+ 
+    // ══════════════════════════════════════════════════
+    //  ★ PILA DE DEVOLUCIONES — funciones nuevas
+    // ══════════════════════════════════════════════════
+ 
+    /**
+     * Busca el equipo por activo y/o serie para previsualizar antes
+     * de confirmar la devolución. No llama aún al endpoint de devolver.
+     */
+    async function buscarParaDevolucion() {
+        const activo = document.getElementById("dev-activo").value.trim();
+        const serie  = document.getElementById("dev-serie").value.trim();
+ 
+        if (!activo && !serie) {
+            swal("Atención", "Ingresa el Núm. Activo o el Núm. Serie para buscar el equipo.", "warning");
+            return;
+        }
+ 
+        mostrarSpinnerDev(true);
+        limpiarPreview();
+ 
+        try {
+            const res  = await fetch(`${API_URL}/inventario`);
+            const data = await res.json();
+ 
+            // Buscar coincidencia exacta (activo tiene prioridad; serie como segundo criterio)
+            const encontrado = data.inventario.find(e => {
+                const okActivo = activo ? (e.activo  && e.activo.toUpperCase()  === activo.toUpperCase())  : false;
+                const okSerie  = serie  ? (e.serie   && e.serie.toUpperCase()   === serie.toUpperCase())   : false;
+                // Debe coincidir con al menos uno de los ingresados
+                if (activo && serie) return okActivo && okSerie;   // ambos → debe cumplir los dos
+                return okActivo || okSerie;                         // uno solo → cualquiera basta
+            });
+ 
+            if (!encontrado) {
+                swal("No encontrado", "No se encontró ningún equipo con los datos ingresados.", "warning");
+            } else {
+                equipoDevolucion = encontrado;
+                mostrarPreview(encontrado);
+                document.getElementById("btn-confirmar-dev").disabled = false;
+            }
+        } catch {
+            swal("Error", "No se pudo conectar con la API.", "error");
+        }
+        mostrarSpinnerDev(false);
+    }
+ 
+    /** Muestra la tarjeta de previsualización con los datos del equipo. */
+    function mostrarPreview(e) {
+        document.getElementById("pv-id").textContent        = e.id_equipo      ?? "-";
+        document.getElementById("pv-tipo").textContent      = e.tipo_equipo    ?? "-";
+        document.getElementById("pv-marca").textContent     = e.marca          ?? "-";
+        document.getElementById("pv-modelo").textContent    = e.modelo         ?? "-";
+        document.getElementById("pv-serie").textContent     = e.serie          ?? "-";
+        document.getElementById("pv-activo").textContent    = e.activo         ?? "-";
+        document.getElementById("pv-estado").textContent    = e.estado         ?? "-";
+        document.getElementById("pv-fecha-asig").textContent = e.fecha_asig    ?? "Sin asignar";
+ 
+        document.getElementById("dev-preview").classList.remove("d-none");
+ 
+        // Advertencia si no tiene fecha de asignación
+        const alertaNoAsig = document.getElementById("dev-alerta-noasig");
+        if (!e.fecha_asig) {
+            alertaNoAsig.classList.remove("d-none");
+        } else {
+            alertaNoAsig.classList.add("d-none");
+        }
+    }
+ 
+    /**
+     * Confirma la devolución: llama a POST /inventario/devolver/{id}
+     * y envía la fecha_devolucion ingresada manualmente como query param.
+     */
+    async function confirmarDevolucion() {
+        if (!equipoDevolucion) return;
+ 
+        const fechaDev = document.getElementById("dev-fecha").value;
+        if (!fechaDev) {
+            swal("Atención", "Debes ingresar la fecha de devolución.", "warning");
+            return;
+        }
+ 
+        swal({
+            title: "¿Confirmar devolución?",
+            text:  `Equipo ID ${equipoDevolucion.id_equipo} — ${equipoDevolucion.tipo_equipo ?? ""} ${equipoDevolucion.marca ?? ""}`,
+            icon:  "info",
+            buttons: { cancel: "Cancelar", confirm: { text: "Sí, registrar" } }
+        }).then(async (ok) => {
+            if (!ok) return;
+            try {
+                // Enviamos la fecha manual como query param
+                const url = `${API_URL}/inventario/devolver/${equipoDevolucion.id_equipo}?fecha_devolucion=${fechaDev}`;
+                const res = await fetch(url, { method: "POST" });
+ 
+                if (res.ok) {
+                    const data = await res.json();
+                    swal("✅ Devolución registrada",
+                         `Equipo ${data.id_equipo} devuelto el ${data.fecha_devolucion}`, "success");
+                    limpiarDevolucion();
+                } else {
+                    const err = await res.json();
+                    swal("Error", err.detail ?? "No se pudo registrar la devolución.", "error");
+                }
+            } catch {
+                swal("Error", "No se pudo conectar con la API.", "error");
+            }
+        });
+    }
+ 
+    /** Limpia el formulario de devolución por completo. */
+    function limpiarDevolucion() {
+        document.getElementById("dev-activo").value = "";
+        document.getElementById("dev-serie").value  = "";
+        document.getElementById("dev-fecha").value  = "";
+        document.getElementById("btn-confirmar-dev").disabled = true;
+        equipoDevolucion = null;
+        limpiarPreview();
+    }
+ 
+    function limpiarPreview() {
+        document.getElementById("dev-preview").classList.add("d-none");
+        document.getElementById("dev-alerta-noasig").classList.add("d-none");
+    }
+ 
+    /**
+     * Carga todos los equipos con FECHA_DEVOLUCION registrada y sin FECHA_ASIG
+     * (es decir, los que están actualmente en la pila LIFO) y los muestra en la tabla.
+     */
+    async function verPilaRegistros() {
+        try {
+            const res  = await fetch(`${API_URL}/inventario`);
+            const data = await res.json();
+ 
+            // Filtrar: devueltos (fecha_devolucion != null) y no reasignados (fecha_asig == null)
+            const devueltos = data.inventario
+                .filter(e => e.fecha_devolucion && !e.fecha_asig)
+                .sort((a, b) => new Date(b.fecha_devolucion) - new Date(a.fecha_devolucion)); // LIFO: más reciente primero
+ 
+            pilaFull = devueltos;
+            renderTablaPila(devueltos);
+ 
+            const btn = document.getElementById("tab-pila-registros");
+            btn.removeAttribute("disabled");
+            bootstrap.Tab.getOrCreateInstance(btn).show();
+        } catch {
+            swal("Error", "No se pudo cargar la pila de devoluciones.", "error");
+        }
+    }
+ 
+    /** Filtra la tabla de la pila por tipo de equipo. */
+    function filtrarPila() {
+        const tipo = document.getElementById("pila-filtro-tipo").value;
+        const filtrados = tipo
+            ? pilaFull.filter(e => e.tipo_equipo && e.tipo_equipo.toUpperCase() === tipo.toUpperCase())
+            : pilaFull;
+        renderTablaPila(filtrados);
+    }
+ 
+    /** Renderiza la tabla de devoluciones con numeración de posición en la pila. */
+    function renderTablaPila(lista) {
+        const tbody   = document.getElementById("cuerpo-tabla-dev");
+        const vacios  = document.getElementById("pila-vacia");
+        tbody.innerHTML = "";
+ 
+        document.getElementById("total-devoluciones").textContent = `${lista.length} en pila`;
+ 
+        if (lista.length === 0) {
+            vacios.classList.remove("d-none");
+            return;
+        }
+        vacios.classList.add("d-none");
+ 
+        lista.forEach((e, idx) => {
+            // Posición 1 = tope de la pila (el siguiente en salir con LIFO)
+            const posicion = idx === 0
+                ? `<span class="badge bg-success">🔝 Tope (#1)</span>`
+                : `#${idx + 1}`;
+ 
+            tbody.innerHTML += `
+                <tr ${idx === 0 ? 'class="table-success"' : ""}>
+                    <td>${e.id_equipo      ?? "-"}</td>
+                    <td>${e.tipo_equipo    ?? "-"}</td>
+                    <td>${e.marca          ?? "-"}</td>
+                    <td>${e.modelo         ?? "-"}</td>
+                    <td>${e.serie          ?? "-"}</td>
+                    <td>${e.activo         ?? "-"}</td>
+                    <td>${e.estado         ?? "-"}</td>
+                    <td>${e.fecha_devolucion ? e.fecha_devolucion.substring(0,10) : "-"}</td>
+                    <td class="text-center">${posicion}</td>
+                </tr>`;
+        });
+    }
+ 
     // ══════════════════════════════════════════════════
     //  UTILIDADES
     // ══════════════════════════════════════════════════
-    function volverBusqueda() {
-        bootstrap.Tab.getOrCreateInstance(document.getElementById("tab-busqueda")).show();
-    }
-    function mostrarSpinner(v) {
-        document.getElementById("spinner").style.display = v ? "block" : "none";
-    }
-
-    // Enter en cualquier campo de filtro dispara la búsqueda
+    function volverBusqueda()   { bootstrap.Tab.getOrCreateInstance(document.getElementById("tab-busqueda")).show(); }
+    function volverDevolucion() { bootstrap.Tab.getOrCreateInstance(document.getElementById("tab-devolucion")).show(); }
+    function mostrarSpinner(v)    { document.getElementById("spinner").style.display    = v ? "block" : "none"; }
+    function mostrarSpinnerDev(v) { document.getElementById("spinner-dev").style.display = v ? "block" : "none"; }
+ 
+    // Enter en campos de filtro dispara búsqueda
     ["f-serie","f-activo"].forEach(id => {
         document.getElementById(id).addEventListener("keypress", e => {
             if (e.key === "Enter") buscarConFiltros();
+        });
+    });
+ 
+    // Enter en campos de devolución dispara búsqueda de equipo
+    ["dev-activo","dev-serie"].forEach(id => {
+        document.getElementById(id).addEventListener("keypress", e => {
+            if (e.key === "Enter") buscarParaDevolucion();
         });
     });
 </script>
