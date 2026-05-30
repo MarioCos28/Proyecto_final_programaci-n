@@ -29,7 +29,6 @@ class Equipo(BaseModel):
     usur_ingresa: Optional[str] = None
     foto_equipo: Optional[str] = None
 
-# GET - Todos los equipos
 @app.get("/inventario")
 def consultar_todos():
     conn = get_connection()
@@ -40,10 +39,6 @@ def consultar_todos():
     conn.close()
     return {"inventario": [dict(zip(columnas, fila)) for fila in datos]}
 
-# ─────────────────────────────────────────────────────────────────────────────
-# GET - Consulta FIFO (solo sugiere, no modifica)
-# GET /inventario/asignar/{tipo_equipo}
-# ─────────────────────────────────────────────────────────────────────────────
 @app.get("/inventario/asignar/{tipo_equipo}")
 def asignar_equipo(tipo_equipo: str):
     conn = get_connection()
@@ -89,10 +84,6 @@ def asignar_equipo(tipo_equipo: str):
         conn.close()
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# POST - Confirmar asignación FIFO (marca el equipo como asignado)
-# POST /inventario/confirmar-asignacion/{id_equipo}
-# ─────────────────────────────────────────────────────────────────────────────
 @app.post("/inventario/confirmar-asignacion/{id_equipo}")
 def confirmar_asignacion(id_equipo: int, usur_ingresa: Optional[str] = None):
     conn = get_connection()
@@ -101,7 +92,6 @@ def confirmar_asignacion(id_equipo: int, usur_ingresa: Optional[str] = None):
     try:
         cursor = conn.cursor()
 
-        # Verificar que existe y no está ya asignado
         cursor.execute(
             "SELECT ID_EQUIPO, FECHA_ASIG FROM INVENTARIO_IDT WHERE ID_EQUIPO = %s",
             (id_equipo,)
@@ -112,7 +102,6 @@ def confirmar_asignacion(id_equipo: int, usur_ingresa: Optional[str] = None):
         if fila[1] is not None:
             raise HTTPException(status_code=409, detail="El equipo ya fue asignado anteriormente")
 
-        # Marcar como asignado con la fecha actual
         cursor.execute(
             """UPDATE INVENTARIO_IDT
                SET FECHA_ASIG   = CURRENT_DATE,
@@ -135,7 +124,6 @@ def confirmar_asignacion(id_equipo: int, usur_ingresa: Optional[str] = None):
     finally:
         conn.close()
 
-# GET - Por ID
 @app.get("/inventario/{id_equipo}")
 def buscar_por_id(id_equipo: int):
     conn = get_connection()
@@ -148,7 +136,6 @@ def buscar_por_id(id_equipo: int):
         raise HTTPException(status_code=404, detail="Equipo no encontrado")
     return dict(zip(columnas, fila))
 
-# POST - Registrar equipo
 @app.post("/inventario")
 def registrar_equipo(e: Equipo):
     conn = get_connection()
@@ -157,7 +144,6 @@ def registrar_equipo(e: Equipo):
     try:
         cursor = conn.cursor()
 
-        # ── Validar SERIE duplicada ──────────────────────────────────────
         if e.serie:
             cursor.execute(
                 "SELECT ID_EQUIPO FROM INVENTARIO_IDT WHERE UPPER(SERIE) = UPPER(%s)",
@@ -168,8 +154,6 @@ def registrar_equipo(e: Equipo):
                     status_code=409,
                     detail=f"Ya existe un equipo registrado con la serie '{e.serie}'"
                 )
-
-        # ── Validar ACTIVO duplicado ─────────────────────────────────────
         if e.activo:
             cursor.execute(
                 "SELECT ID_EQUIPO FROM INVENTARIO_IDT WHERE UPPER(ACTIVO) = UPPER(%s)",
@@ -181,7 +165,6 @@ def registrar_equipo(e: Equipo):
                     detail=f"Ya existe un equipo registrado con el activo '{e.activo}'"
                 )
 
-        # ── Insertar ─────────────────────────────────────────────────────
         cursor.execute(
             """INSERT INTO INVENTARIO_IDT (
                 TIPO_EQUIPO, MARCA, MODELO, SERIE, ACTIVO, ESTADO,
@@ -207,11 +190,10 @@ def registrar_equipo(e: Equipo):
     finally:
         conn.close()
 
-# POST - Devolver un equipo (lo mete a la Pila)
 @app.post("/inventario/devolver/{id_equipo}")
 def devolver_equipo(
     id_equipo: int,
-    fecha_devolucion: Optional[datetime.date] = None   # ← parámetro nuevo (query param)
+    fecha_devolucion: Optional[datetime.date] = None 
 ):
     conn = get_connection()
     if conn is None:
@@ -219,7 +201,6 @@ def devolver_equipo(
     try:
         cursor = conn.cursor()
  
-        # Verificar que el equipo existe
         cursor.execute(
             "SELECT ID_EQUIPO, FECHA_ASIG FROM INVENTARIO_IDT WHERE ID_EQUIPO = %s",
             (id_equipo,)
@@ -228,10 +209,6 @@ def devolver_equipo(
         if not fila:
             raise HTTPException(status_code=404, detail="Equipo no encontrado")
  
-        # Advertencia si no estaba asignado, pero se permite continuar
-        # (el HTML ya muestra el warning al usuario antes de confirmar)
- 
-        # Si no se envió fecha manual, usar la fecha/hora actual
         fecha_real = fecha_devolucion if fecha_devolucion else datetime.date.today()
  
         cursor.execute(
@@ -256,7 +233,6 @@ def devolver_equipo(
     finally:
         conn.close()
 
-# GET - Asignar desde devoluciones usando LIFO (Pila)
 @app.get("/inventario/asignar-devuelto/{tipo_equipo}")
 def asignar_devuelto(tipo_equipo: str):
     conn = get_connection()
@@ -265,7 +241,6 @@ def asignar_devuelto(tipo_equipo: str):
     try:
         cursor = conn.cursor()
 
-        # LIFO: el último en devolverse es el primero en salir
         cursor.execute("""
             SELECT * FROM INVENTARIO_IDT
             WHERE UPPER(TIPO_EQUIPO)  = UPPER(%s)
@@ -297,7 +272,6 @@ def asignar_devuelto(tipo_equipo: str):
     finally:
         conn.close()
 
-# PUT - Actualizar equipo
 @app.put("/inventario/{id_equipo}")
 def actualizar_equipo(id_equipo: int, e: Equipo):
     conn = get_connection()
@@ -326,7 +300,6 @@ def actualizar_equipo(id_equipo: int, e: Equipo):
     finally:
         conn.close()
 
-# DELETE - Eliminar equipo
 @app.delete("/inventario/{id_equipo}")
 def eliminar_equipo(id_equipo: int):
     conn = get_connection()
