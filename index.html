@@ -24,8 +24,8 @@
             align-items: center;
             gap: 5px;
         }
-        .feedback-campo.ok    { color: #198754; }
-        .feedback-campo.error { color: #dc3545; }
+        .feedback-campo.ok       { color: #198754; }
+        .feedback-campo.error    { color: #dc3545; }
         .feedback-campo.checking { color: #6c757d; }
 
         /* Spinner pequeño dentro del campo */
@@ -38,6 +38,26 @@
             animation: spin .6s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Botón salir fijo */
+        .btn-salir {
+            position: fixed;
+            bottom: 24px;
+            left: 24px;
+            z-index: 9999;
+            background: linear-gradient(135deg, #dc3545, #a71d2a);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(220,53,69,0.4);
+            transition: opacity .2s, transform .1s;
+        }
+        .btn-salir:hover  { opacity: .9; }
+        .btn-salir:active { transform: scale(.97); }
     </style>
 </head>
 	
@@ -86,7 +106,9 @@
                         </div>
                         <div class="col-md-6 form-group">
                             <label>MODELO</label>
-                            <input type="text" id="modelo_equipo_laptop" class="form-control text-uppercase" oninput="this.value=this.value.toUpperCase()" placeholder="INGRESE EL MODELO DE LA LAPTOP">
+                            <input type="text" id="modelo_equipo_laptop" class="form-control text-uppercase"
+                                   oninput="this.value=this.value.toUpperCase()"
+                                   placeholder="INGRESE EL MODELO DE LA LAPTOP">
                         </div>
                     </div>
                     <div class="row mb-3">
@@ -130,7 +152,9 @@
                     <div class="row mb-3">
                         <div class="col-md-12">
                             <label class="fw-bold">Observaciones / Comentarios</label>
-                            <textarea id="obs_equipo_lap" class="form-control text-uppercase" rows="3" placeholder="INGRESE DETALLES ADICIONALES" oninput="this.value=this.value.toUpperCase()"></textarea>
+                            <textarea id="obs_equipo_lap" class="form-control text-uppercase" rows="3"
+                                      placeholder="INGRESE DETALLES ADICIONALES"
+                                      oninput="this.value=this.value.toUpperCase()"></textarea>
                         </div>
                     </div>
                 </div>
@@ -152,7 +176,9 @@
                         </div>
                         <div class="col-md-6 form-group">
                             <label>MODELO</label>
-                            <input type="text" id="modelo_equipo_mon" class="form-control text-uppercase" oninput="this.value=this.value.toUpperCase()" placeholder="INGRESE EL MODELO DEL MONITOR">
+                            <input type="text" id="modelo_equipo_mon" class="form-control text-uppercase"
+                                   oninput="this.value=this.value.toUpperCase()"
+                                   placeholder="INGRESE EL MODELO DEL MONITOR">
                         </div>
                     </div>
                     <div class="row mb-3">
@@ -196,7 +222,9 @@
                     <div class="row mb-3">
                         <div class="col-md-12">
                             <label class="fw-bold">Observaciones / Comentarios</label>
-                            <textarea id="obs_equipo_mon" class="form-control text-uppercase" rows="3" placeholder="INGRESE DETALLES ADICIONALES" oninput="this.value=this.value.toUpperCase()"></textarea>
+                            <textarea id="obs_equipo_mon" class="form-control text-uppercase" rows="3"
+                                      placeholder="INGRESE DETALLES ADICIONALES"
+                                      oninput="this.value=this.value.toUpperCase()"></textarea>
                         </div>
                     </div>
                 </div>
@@ -215,7 +243,9 @@
                         </div>
                         <div class="col-md-6 form-group">
                             <label>MODELO</label>
-                            <input type="text" id="modelo_equipo_cano" class="form-control text-uppercase" oninput="this.value=this.value.toUpperCase()" placeholder="INGRESE EL MODELO DE CAÑONERA">
+                            <input type="text" id="modelo_equipo_cano" class="form-control text-uppercase"
+                                   oninput="this.value=this.value.toUpperCase()"
+                                   placeholder="INGRESE EL MODELO DE CAÑONERA">
                         </div>
                     </div>
                     <div class="row mb-3">
@@ -259,7 +289,9 @@
                     <div class="row mb-3">
                         <div class="col-md-12">
                             <label class="fw-bold">Observaciones / Comentarios</label>
-                            <textarea id="obs_equipo_cano" class="form-control text-uppercase" rows="3" placeholder="INGRESE DETALLES ADICIONALES" oninput="this.value=this.value.toUpperCase()"></textarea>
+                            <textarea id="obs_equipo_cano" class="form-control text-uppercase" rows="3"
+                                      placeholder="INGRESE DETALLES ADICIONALES"
+                                      oninput="this.value=this.value.toUpperCase()"></textarea>
                         </div>
                     </div>
                 </div>
@@ -278,7 +310,9 @@
                         </div>
                         <div class="col-md-6 form-group">
                             <label>MODELO</label>
-                            <input type="text" id="modelo_equipo_switch" class="form-control text-uppercase" oninput="this.value=this.value.toUpperCase()" placeholder="INGRESE EL MODELO DEL SWITCH">
+                            <input type="text" id="modelo_equipo_switch" class="form-control text-uppercase"
+                                   oninput="this.value=this.value.toUpperCase()"
+                                   placeholder="INGRESE EL MODELO DEL SWITCH">
                         </div>
                     </div>
                     <div class="row mb-3">
@@ -322,7 +356,9 @@
                     <div class="row mb-3">
                         <div class="col-md-12">
                             <label class="fw-bold">Observaciones / Comentarios</label>
-                            <textarea id="obs_equipo_switch" class="form-control text-uppercase" rows="3" placeholder="INGRESE DETALLES ADICIONALES" oninput="this.value=this.value.toUpperCase()"></textarea>
+                            <textarea id="obs_equipo_switch" class="form-control text-uppercase" rows="3"
+                                      placeholder="INGRESE DETALLES ADICIONALES"
+                                      oninput="this.value=this.value.toUpperCase()"></textarea>
                         </div>
                     </div>
                 </div>
@@ -340,7 +376,9 @@
                         </div>
                         <div class="col-md-6 form-group">
                             <label>MODELO</label>
-                            <input type="text" id="modelo_equipo_otros" class="form-control text-uppercase" oninput="this.value=this.value.toUpperCase()" placeholder="INGRESE EL MODELO DEL EQUIPO">
+                            <input type="text" id="modelo_equipo_otros" class="form-control text-uppercase"
+                                   oninput="this.value=this.value.toUpperCase()"
+                                   placeholder="INGRESE EL MODELO DEL EQUIPO">
                         </div>
                     </div>
                     <div class="row mb-3">
@@ -384,26 +422,35 @@
                     <div class="row mb-3">
                         <div class="col-md-12">
                             <label class="fw-bold">Observaciones / Comentarios</label>
-                            <textarea id="obs_equipo_otros" class="form-control text-uppercase" rows="3" placeholder="INGRESE DETALLES ADICIONALES" oninput="this.value=this.value.toUpperCase()"></textarea>
+                            <textarea id="obs_equipo_otros" class="form-control text-uppercase" rows="3"
+                                      placeholder="INGRESE DETALLES ADICIONALES"
+                                      oninput="this.value=this.value.toUpperCase()"></textarea>
                         </div>
                     </div>
                 </div>
 
+                <!-- Botones de acción -->
                 <button type="button" onclick="ingreso_equipo();" id="btnIngresar" class="btn btn-primary">
                     Ingresar registro
                 </button>
                 <button type="button" onclick="cancelar();" class="btn btn-secondary">
                     Volver
                 </button>
+                <button type="button" onclick="irAConsulta();" class="btn btn-outline-primary">
+                    Ir a Consultas
+                </button>
 
             </div>
         </div>
     </div>
 
+    <!-- Botón Salir fijo (fuera del container, en el HTML) -->
+    <button class="btn-salir" onclick="cerrarSesion()"> Salir</button>
+
     <script>
         const API_URL = "http://127.0.0.1:8000";
 
-        // ── Cache del inventario (se carga una vez y se refresca al registrar) ──
+        // ── Cache del inventario ─────────────────────────────────────────────────
         let inventarioCache = [];
 
         async function cargarInventario() {
@@ -419,25 +466,40 @@
         // Cargar al inicio
         cargarInventario();
 
-        // ── Debounce: espera 350ms después del último teclazo ───────────────────
+        // ── Navegación ───────────────────────────────────────────────────────────
+        function irAConsulta() { window.location.href = "consulta.html"; }
+
+        function cerrarSesion() {
+            swal({
+                title: "¿Deseas salir?",
+                text:  "Se cerrará la sesión actual.",
+                icon:  "warning",
+                buttons: {
+                    cancel:  "Cancelar",
+                    confirm: { text: "Sí, salir", className: "btn-danger" }
+                }
+            }).then((confirm) => {
+                if (confirm) window.location.href = "login.html";
+            });
+        }
+
+        // ── Debounce: espera 350ms después del último teclazo ────────────────────
         const timers = {};
         function debounce(key, fn, delay = 350) {
             clearTimeout(timers[key]);
             timers[key] = setTimeout(fn, delay);
         }
 
-        // ── Validación en vivo ──────────────────────────────────────────────────
+        // ── Validación en vivo ───────────────────────────────────────────────────
         function validarCampoEnVivo(input, tipo, fbId) {
             const valor = input.value.trim();
             const fb    = document.getElementById(fbId);
 
-            // Campo vacío → limpiar feedback
             if (!valor) {
                 setFeedback(input, fb, '', '');
                 return;
             }
 
-            // Mostrar "verificando..." mientras espera el debounce
             setFeedback(input, fb, 'checking', '<span class="spinner-field"></span> Verificando...');
 
             debounce(fbId, () => {
@@ -447,23 +509,22 @@
                 );
 
                 if (existe) {
-                    const label = tipo === 'serie' ? 'serie' : 'activo';
-                    setFeedback(input, fb, 'error', ` Ya existe un equipo con este ${label}`);
+                    setFeedback(input, fb, 'error', `✖ Ya existe un equipo con este ${tipo}`);
                 } else {
-                    setFeedback(input, fb, 'ok', ' Disponible');
+                    setFeedback(input, fb, 'ok', '✔ Disponible');
                 }
             });
         }
 
         function setFeedback(input, fb, estado, html) {
-            fb.innerHTML   = html;
-            fb.className   = 'feedback-campo ' + estado;
+            fb.innerHTML = html;
+            fb.className = 'feedback-campo ' + estado;
             input.classList.remove('campo-ok', 'campo-error');
             if (estado === 'ok')    input.classList.add('campo-ok');
             if (estado === 'error') input.classList.add('campo-error');
         }
 
-        // ── Mostrar/ocultar sección según tipo de equipo ────────────────────────
+        // ── Mostrar/ocultar sección según tipo de equipo ─────────────────────────
         const opt = document.getElementById("tipo_equipo");
         if (opt) {
             opt.addEventListener("change", function(e) {
@@ -476,7 +537,7 @@
             });
         }
 
-        // ── Mapa de campos por tipo de equipo ───────────────────────────────────
+        // ── Mapa de campos por tipo de equipo ────────────────────────────────────
         const camposPorTipo = {
             "1": {
                 tipo: "Laptop",
@@ -530,7 +591,7 @@
             }
         };
 
-        // ── Botón "Ingresar registro" ────────────────────────────────────────────
+        // ── Botón "Ingresar registro" ─────────────────────────────────────────────
         function ingreso_equipo() {
             const tipo = document.getElementById("tipo_equipo").value;
 
@@ -541,12 +602,12 @@
 
             const campos = camposPorTipo[tipo];
 
-            if (!campos.marca())      { swal("Validar datos", "Seleccione la marca del equipo", "error"); return; }
-            if (!campos.modelo())     { swal("Validar datos", "Ingrese el modelo del equipo", "error"); return; }
-            if (!campos.serie())      { swal("Validar datos", "Ingrese el número de serie", "error"); return; }
-            if (!campos.activo())     { swal("Validar datos", "Ingrese el número de activo", "error"); return; }
-            if (!campos.estado())     { swal("Validar datos", "Seleccione el estado del equipo", "error"); return; }
-            if (!campos.condicion())  { swal("Validar datos", "Seleccione la condición del equipo", "error"); return; }
+            if (!campos.marca())      { swal("Validar datos", "Seleccione la marca del equipo", "error");       return; }
+            if (!campos.modelo())     { swal("Validar datos", "Ingrese el modelo del equipo", "error");         return; }
+            if (!campos.serie())      { swal("Validar datos", "Ingrese el número de serie", "error");           return; }
+            if (!campos.activo())     { swal("Validar datos", "Ingrese el número de activo", "error");          return; }
+            if (!campos.estado())     { swal("Validar datos", "Seleccione el estado del equipo", "error");      return; }
+            if (!campos.condicion())  { swal("Validar datos", "Seleccione la condición del equipo", "error");   return; }
             if (!campos.comentario()) { swal("Validar datos", "Ingrese una observación o comentario", "error"); return; }
 
             // Bloquear si hay duplicados detectados en vivo
@@ -575,7 +636,7 @@
             });
         }
 
-        // ── Envío a FastAPI ─────────────────────────────────────────────────────
+        // ── Envío a FastAPI ───────────────────────────────────────────────────────
         async function enviarAFastAPI(campos) {
             const hoy    = new Date().toISOString().split("T")[0];
             const serie  = campos.serie();
@@ -606,7 +667,6 @@
 
                 if (response.ok) {
                     const data = await response.json();
-                    // Refrescar cache con el nuevo registro
                     await cargarInventario();
                     swal("¡Éxito!", `Equipo registrado correctamente. ID asignado: #${data.id_equipo}`, "success");
                     limpiarFormulario();
@@ -619,26 +679,23 @@
             }
         }
 
-        // ── Limpiar formulario ──────────────────────────────────────────────────
+        // ── Limpiar formulario ────────────────────────────────────────────────────
         function limpiarFormulario() {
             document.getElementById("tipo_equipo").value = "0";
             document.querySelectorAll(".ingreso_equipo").forEach(el => el.style.display = "none");
             document.querySelectorAll("input[type='text'], textarea, select").forEach(el => {
                 if (el.id !== "tipo_equipo") el.value = "";
             });
-            // Limpiar todos los feedbacks
             document.querySelectorAll(".feedback-campo").forEach(fb => {
-                fb.innerHTML  = "";
-                fb.className  = "feedback-campo";
+                fb.innerHTML = "";
+                fb.className = "feedback-campo";
             });
             document.querySelectorAll(".campo-ok, .campo-error").forEach(el => {
                 el.classList.remove("campo-ok", "campo-error");
             });
         }
 
-        function cancelar() {
-            limpiarFormulario();
-        }
+        function cancelar() { limpiarFormulario(); }
     </script>
 </body>
 </html>
