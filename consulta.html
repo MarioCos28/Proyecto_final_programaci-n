@@ -8,10 +8,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
     <style>
-        #tabla-resultados thead th  { background-color: #4364EA; color: white; }
+        #tabla-resultados thead th   { background-color: #4364EA; color: white; }
         #tabla-devoluciones thead th { background-color: #198754; color: white; }
-        #spinner, #spinner-dev      { display: none; }
- 
+        #spinner, #spinner-dev       { display: none; }
         .pagina-btn {
             min-width: 36px; height: 36px; padding: 0 10px;
             border: 1px solid #dee2e6; background: #fff;
@@ -21,15 +20,34 @@
         .pagina-btn:hover:not(:disabled) { background: #e9ecef; }
         .pagina-btn.activa               { background: #4364EA; color: #fff; border-color: #4364EA; font-weight: 600; }
         .pagina-btn:disabled             { opacity: .45; cursor: not-allowed; }
-        #total-registros  { font-size: .85rem; }
+        #total-registros    { font-size: .85rem; }
         #total-devoluciones { font-size: .85rem; }
-        #card-filtros     { border-left: 4px solid #4364EA; }
-        #card-devolucion  { border-left: 4px solid #198754; }
+        #card-filtros    { border-left: 4px solid #4364EA; }
+        #card-devolucion { border-left: 4px solid #198754; }
+
+        .btn-salir {
+            position: fixed;
+            bottom: 24px;
+            left: 24px;
+            z-index: 9999;
+            background: linear-gradient(135deg, #dc3545, #a71d2a);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(220,53,69,0.4);
+            transition: opacity .2s, transform .1s;
+        }
+        .btn-salir:hover  { opacity: .9; }
+        .btn-salir:active { transform: scale(.97); }
     </style>
 </head>
 <body>
 <div class="container-fluid mt-4">
- 
+
     <ul class="nav nav-tabs nav-justified" id="tabsConsulta" role="tablist">
         <li class="nav-item">
             <button class="nav-link active" id="tab-busqueda"
@@ -43,26 +61,23 @@
                 Resultados
             </button>
         </li>
-        <!-- ★ NUEVA PESTAÑA DEVOLUCIONES -->
         <li class="nav-item">
             <button class="nav-link" id="tab-devolucion"
                     data-bs-toggle="tab" data-bs-target="#devolucion1" type="button" role="tab">
-                📦 Pila de Devoluciones
+                Pila de Devoluciones
             </button>
         </li>
         <li class="nav-item">
             <button class="nav-link" id="tab-pila-registros"
                     data-bs-toggle="tab" data-bs-target="#pila-registros1" type="button" role="tab" disabled>
-                📋 Registros de Pila
+                Registros de Pila
             </button>
         </li>
     </ul>
- 
+
     <div class="tab-content mt-3">
- 
-        <!-- ══════════════════════════════════════════════════
-             PESTAÑA 1: BÚSQUEDA CON FILTROS
-        ══════════════════════════════════════════════════ -->
+
+        <!-- PESTAÑA 1: BÚSQUEDA CON FILTROS -->
         <div id="consulta1" class="tab-pane fade show active" role="tabpanel">
             <div class="card p-4 shadow-sm" id="card-filtros">
                 <h5 class="mb-3">Filtros de Búsqueda</h5>
@@ -70,14 +85,12 @@
                     <div class="col-md-3">
                         <label class="form-label fw-bold">Núm. Serie</label>
                         <input type="text" class="form-control text-uppercase" id="f-serie"
-                               placeholder="Ej: 5DC5648D"
-                               oninput="this.value=this.value.toUpperCase()">
+                               placeholder="Ej: 5DC5648D" oninput="this.value=this.value.toUpperCase()">
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-bold">Núm. Activo</label>
                         <input type="text" class="form-control text-uppercase" id="f-activo"
-                               placeholder="Ej: 009783"
-                               oninput="this.value=this.value.toUpperCase()">
+                               placeholder="Ej: 009783" oninput="this.value=this.value.toUpperCase()">
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-bold">Tipo de Equipo</label>
@@ -112,13 +125,12 @@
                     <button type="button" onclick="buscarConFiltros()" class="btn btn-primary">Buscar</button>
                     <button type="button" onclick="verTodos()"          class="btn btn-secondary">Ver todos</button>
                     <button type="button" onclick="limpiarFiltros()"    class="btn btn-outline-secondary">Limpiar filtros</button>
+                    <button type="button" onclick="irAIngreso()"        class="btn btn-outline-primary ms-auto">← Ir a Ingreso</button>
                 </div>
             </div>
         </div>
- 
-        <!-- ══════════════════════════════════════════════════
-             PESTAÑA 2: RESULTADOS CON PAGINACIÓN
-        ══════════════════════════════════════════════════ -->
+
+        <!-- PESTAÑA 2: RESULTADOS CON PAGINACIÓN -->
         <div id="resultado1" class="tab-pane fade" role="tabpanel">
             <div class="card p-4 shadow-sm">
                 <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
@@ -162,57 +174,45 @@
                 </div>
             </div>
         </div>
- 
-        <!-- ══════════════════════════════════════════════════
-             PESTAÑA 3: PILA DE DEVOLUCIONES  ★ NUEVA
-        ══════════════════════════════════════════════════ -->
+
+        <!-- PESTAÑA 3: PILA DE DEVOLUCIONES -->
         <div id="devolucion1" class="tab-pane fade" role="tabpanel">
             <div class="card p-4 shadow-sm" id="card-devolucion">
-                <h5 class="mb-1 text-success">📦 Registrar Devolución de Equipo</h5>
+                <h5 class="mb-1 text-success">Registrar Devolución de Equipo</h5>
                 <p class="text-muted small mb-3">
                     Identifica el equipo por su Núm. Activo y/o Núm. Serie, ingresa la fecha
                     de devolución y confirma. El equipo se agregará a la <strong>Pila LIFO</strong>.
                 </p>
- 
                 <div class="row g-3 mb-3">
-                    <!-- Búsqueda por activo -->
                     <div class="col-md-4">
                         <label class="form-label fw-bold">Núm. Activo <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <input type="text" class="form-control text-uppercase" id="dev-activo"
-                                   placeholder="Ej: 009783"
-                                   oninput="this.value=this.value.toUpperCase()">
+                                   placeholder="Ej: 009783" oninput="this.value=this.value.toUpperCase()">
                             <button class="btn btn-outline-success" type="button" onclick="buscarParaDevolucion()">
-                                🔍 Buscar
+                                Buscar
                             </button>
                         </div>
                         <div class="form-text">O ingresa la serie para identificar el equipo.</div>
                     </div>
-                    <!-- Búsqueda por serie -->
                     <div class="col-md-4">
                         <label class="form-label fw-bold">Núm. Serie</label>
                         <input type="text" class="form-control text-uppercase" id="dev-serie"
-                               placeholder="Ej: 5DC5648D"
-                               oninput="this.value=this.value.toUpperCase()">
+                               placeholder="Ej: 5DC5648D" oninput="this.value=this.value.toUpperCase()">
                     </div>
-                    <!-- Fecha devolución manual -->
                     <div class="col-md-4">
                         <label class="form-label fw-bold">Fecha de Devolución <span class="text-danger">*</span></label>
                         <input type="date" class="form-control" id="dev-fecha">
                     </div>
                 </div>
- 
-                <!-- Spinner búsqueda -->
                 <div id="spinner-dev" class="mb-2">
                     <div class="spinner-border spinner-border-sm text-success" role="status"></div>
                     <span class="ms-2 text-muted">Buscando equipo...</span>
                 </div>
- 
-                <!-- Tarjeta de previsualización del equipo encontrado -->
                 <div id="dev-preview" class="alert alert-success d-none mb-3">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <h6 class="alert-heading mb-1">✅ Equipo encontrado</h6>
+                            <h6 class="alert-heading mb-1">Equipo encontrado</h6>
                             <div class="row g-2 mt-1">
                                 <div class="col-6 col-md-3"><strong>ID:</strong> <span id="pv-id"></span></div>
                                 <div class="col-6 col-md-3"><strong>Tipo:</strong> <span id="pv-tipo"></span></div>
@@ -227,38 +227,31 @@
                         <button type="button" class="btn-close" onclick="limpiarDevolucion()"></button>
                     </div>
                 </div>
- 
-                <!-- Alerta si el equipo NO está asignado -->
                 <div id="dev-alerta-noasig" class="alert alert-warning d-none mb-3">
-                    ⚠️ <strong>Atención:</strong> Este equipo no tiene fecha de asignación registrada.
+                    <strong>Atención:</strong> Este equipo no tiene fecha de asignación registrada.
                     Igualmente puedes registrar la devolución si corresponde.
                 </div>
- 
-                <!-- Botón confirmar devolución -->
                 <div class="d-flex gap-2">
                     <button type="button" class="btn btn-success" id="btn-confirmar-dev"
                             onclick="confirmarDevolucion()" disabled>
-                        ✔ Confirmar Devolución
+                        Confirmar Devolución
                     </button>
                     <button type="button" class="btn btn-outline-secondary" onclick="limpiarDevolucion()">
-                        ✖ Limpiar
+                        Limpiar
                     </button>
-                    <button type="button" class="btn btn-outline-primary ms-auto"
-                            onclick="verPilaRegistros()">
-                        📋 Ver registros de pila →
+                    <button type="button" class="btn btn-outline-primary ms-auto" onclick="verPilaRegistros()">
+                        Ver registros de pila →
                     </button>
                 </div>
             </div>
         </div>
- 
-        <!-- ══════════════════════════════════════════════════
-             PESTAÑA 4: REGISTROS DE LA PILA (LIFO)  ★ NUEVA
-        ══════════════════════════════════════════════════ -->
+
+        <!-- PESTAÑA 4: REGISTROS DE LA PILA (LIFO) -->
         <div id="pila-registros1" class="tab-pane fade" role="tabpanel">
             <div class="card p-4 shadow-sm">
                 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                     <div>
-                        <h5 class="mb-0">📋 Equipos en Pila de Devoluciones</h5>
+                        <h5 class="mb-0">Equipos en Pila de Devoluciones</h5>
                         <p class="text-muted small mb-0 mt-1">
                             Ordenados por fecha de devolución más reciente (LIFO).
                             Solo equipos devueltos y no reasignados.
@@ -267,10 +260,9 @@
                     <div class="d-flex align-items-center gap-2">
                         <span id="total-devoluciones" class="badge bg-success"></span>
                         <button class="btn btn-sm btn-outline-secondary" onclick="volverDevolucion()">← Volver</button>
-                        <button class="btn btn-sm btn-success" onclick="verPilaRegistros()">🔄 Actualizar</button>
+                        <button class="btn btn-sm btn-success" onclick="verPilaRegistros()">Actualizar</button>
                     </div>
                 </div>
-                <!-- Filtro por tipo en la pila -->
                 <div class="row g-2 mb-3">
                     <div class="col-md-3">
                         <label class="form-label fw-bold small">Filtrar por tipo</label>
@@ -307,14 +299,14 @@
                 </div>
             </div>
         </div>
- 
-    </div><!-- /tab-content -->
-</div><!-- /container -->
- 
- 
-<!-- ══════════════════════════════════════════════════
-     MODAL: VER DETALLE / EDITAR
-══════════════════════════════════════════════════ -->
+
+    </div>
+</div>
+
+<!-- ── Botón Salir (fuera del container, en el HTML) ── -->
+<button class="btn-salir" onclick="cerrarSesion()"> Salir</button>
+
+<!-- MODAL: VER DETALLE / EDITAR -->
 <div class="modal fade" id="modalDetalle" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
@@ -403,7 +395,8 @@
                         </div>
                         <div class="col-md-6">
                             <label class="fw-bold">Usuario Ingreso</label>
-                            <input type="text" class="form-control" id="e-usuario">
+                            <input type="text" class="form-control" id="e-usuario"
+                                   placeholder="Nombre o dejar vacío para DISPONIBLE">
                         </div>
                         <div class="col-md-12">
                             <label class="fw-bold">Comentario</label>
@@ -415,37 +408,51 @@
             </div>
             <div class="modal-footer">
                 <div id="botones-detalle" class="w-100 d-flex gap-2">
-                    <button type="button" class="btn btn-outline-warning" onclick="activarEdicion()">✏️ Modificar</button>
-                    <button type="button" class="btn btn-outline-danger"  onclick="eliminarEquipo()">🗑️ Eliminar</button>
+                    <button type="button" class="btn btn-outline-warning" onclick="activarEdicion()">Modificar</button>
+                    <button type="button" class="btn btn-outline-danger"  onclick="eliminarEquipo()">Eliminar</button>
                 </div>
                 <div id="botones-edicion" class="w-100 d-flex gap-2" style="display:none !important;">
-                    <button type="button" class="btn btn-outline-success"   onclick="guardarCambios()">💾 Guardar cambios</button>
-                    <button type="button" class="btn btn-outline-secondary" onclick="cancelarEdicion()">✖ Cancelar</button>
+                    <button type="button" class="btn btn-outline-success"   onclick="guardarCambios()">Guardar cambios</button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="cancelarEdicion()">Cancelar</button>
                 </div>
             </div>
         </div>
     </div>
 </div>
- 
- 
+
 <script>
     const API_URL = "http://127.0.0.1:8000";
-    let equipoActual    = null;
-    let resultadosFull  = [];
-    let pilaFull        = [];        // ★ todos los equipos devueltos
-    let equipoDevolucion = null;     // ★ equipo encontrado para devolver
-    let paginaActual    = 1;
-    let filasPorPagina  = 10;
- 
-    // ══════════════════════════════════════════════════
-    //  BÚSQUEDA CON FILTROS  (sin cambios)
-    // ══════════════════════════════════════════════════
+    let equipoActual     = null;
+    let resultadosFull   = [];
+    let pilaFull         = [];
+    let equipoDevolucion = null;
+    let paginaActual     = 1;
+    let filasPorPagina   = 10;
+
+    // ── Navegación ───────────────────────────────────────────
+    function irAIngreso() { window.location.href = "index.html"; }
+
+    function cerrarSesion() {
+        swal({
+            title: "¿Deseas salir?",
+            text: "Se cerrará la sesión actual.",
+            icon: "warning",
+            buttons: {
+                cancel: "Cancelar",
+                confirm: { text: "Sí, salir", className: "btn-danger" }
+            }
+        }).then((confirm) => {
+            if (confirm) window.location.href = "login.html";
+        });
+    }
+
+    // ── Búsqueda con filtros ─────────────────────────────────
     async function buscarConFiltros() {
         const fSerie  = document.getElementById("f-serie").value.trim();
         const fActivo = document.getElementById("f-activo").value.trim();
         const fTipo   = document.getElementById("f-tipo").value;
         const fMarca  = document.getElementById("f-marca").value;
- 
+
         if (!fSerie && !fActivo && !fTipo && !fMarca) {
             swal("Atención", "Ingresa al menos un criterio de búsqueda.", "warning");
             return;
@@ -455,10 +462,10 @@
             const res  = await fetch(`${API_URL}/inventario`);
             const data = await res.json();
             const resultados = data.inventario.filter(e => {
-                const okSerie  = !fSerie  || (e.serie  && e.serie.toUpperCase().includes(fSerie.toUpperCase()));
-                const okActivo = !fActivo || (e.activo && e.activo.toUpperCase().includes(fActivo.toUpperCase()));
+                const okSerie  = !fSerie  || (e.serie       && e.serie.toUpperCase().includes(fSerie.toUpperCase()));
+                const okActivo = !fActivo || (e.activo      && e.activo.toUpperCase().includes(fActivo.toUpperCase()));
                 const okTipo   = !fTipo   || (e.tipo_equipo && e.tipo_equipo.toUpperCase() === fTipo.toUpperCase());
-                const okMarca  = !fMarca  || (e.marca && e.marca.toUpperCase() === fMarca.toUpperCase());
+                const okMarca  = !fMarca  || (e.marca       && e.marca.toUpperCase() === fMarca.toUpperCase());
                 return okSerie && okActivo && okTipo && okMarca;
             });
             if (resultados.length === 0) {
@@ -470,7 +477,7 @@
         } catch { swal("Error", "No se pudo conectar con la API.", "error"); }
         mostrarSpinner(false);
     }
- 
+
     async function verTodos() {
         mostrarSpinner(true);
         try {
@@ -485,17 +492,15 @@
         } catch { swal("Error", "No se pudo conectar con la API.", "error"); }
         mostrarSpinner(false);
     }
- 
+
     function limpiarFiltros() {
         document.getElementById("f-serie").value  = "";
         document.getElementById("f-activo").value = "";
         document.getElementById("f-tipo").value   = "";
         document.getElementById("f-marca").value  = "";
     }
- 
-    // ══════════════════════════════════════════════════
-    //  PAGINACIÓN  (sin cambios)
-    // ══════════════════════════════════════════════════
+
+    // ── Paginación ───────────────────────────────────────────
     function iniciarPaginacion(datos) {
         resultadosFull = datos;
         paginaActual   = 1;
@@ -505,14 +510,14 @@
         btn.removeAttribute("disabled");
         bootstrap.Tab.getOrCreateInstance(btn).show();
     }
- 
+
     function renderPagina() {
         const total     = resultadosFull.length;
         const totalPags = Math.ceil(total / filasPorPagina);
         const inicio    = (paginaActual - 1) * filasPorPagina;
         const fin       = Math.min(inicio + filasPorPagina, total);
         const pagina    = resultadosFull.slice(inicio, fin);
- 
+
         const tbody = document.getElementById("cuerpo-tabla");
         tbody.innerHTML = "";
         pagina.forEach(e => {
@@ -533,13 +538,13 @@
                     </td>
                 </tr>`;
         });
- 
+
         document.getElementById("total-registros").textContent = `${total} registro(s)`;
         document.getElementById("info-pagina").textContent =
             `Mostrando ${inicio + 1}–${fin} de ${total} registros`;
         renderControlesPaginacion(totalPags);
     }
- 
+
     function renderControlesPaginacion(totalPags) {
         const cont = document.getElementById("controles-paginacion");
         cont.innerHTML = "";
@@ -576,13 +581,13 @@
         }
         cont.appendChild(crearBtn("»", paginaActual + 1, paginaActual === totalPags));
     }
- 
+
     function cambiarFilasPorPagina() {
         filasPorPagina = parseInt(document.getElementById("filas-por-pagina").value);
         paginaActual   = 1;
         if (resultadosFull.length > 0) renderPagina();
     }
- 
+
     function mostrarResumenFiltros({ fSerie, fActivo, fTipo, fMarca }) {
         const partes = [];
         if (fSerie)  partes.push(`Serie: <strong>${fSerie}</strong>`);
@@ -592,10 +597,8 @@
         document.getElementById("filtros-aplicados").innerHTML =
             partes.length ? "🔍 Filtros: " + partes.join(" &nbsp;|&nbsp; ") : "";
     }
- 
-    // ══════════════════════════════════════════════════
-    //  MODAL DETALLE / EDICIÓN  (sin cambios)
-    // ══════════════════════════════════════════════════
+
+    // ── Modal detalle ────────────────────────────────────────
     function abrirDetalle(equipo) {
         equipoActual = equipo;
         document.getElementById("d-id").textContent           = equipo.id_equipo            ?? "-";
@@ -617,7 +620,7 @@
         document.getElementById("botones-edicion").style.display = "none";
         new bootstrap.Modal(document.getElementById("modalDetalle")).show();
     }
- 
+
     function activarEdicion() {
         const e = equipoActual;
         document.getElementById("e-id").value            = e.id_equipo;
@@ -638,16 +641,19 @@
         document.getElementById("botones-detalle").style.display = "none";
         document.getElementById("botones-edicion").style.display = "flex";
     }
- 
+
     function cancelarEdicion() {
         document.getElementById("vista-detalle").style.display   = "block";
         document.getElementById("vista-edicion").style.display   = "none";
         document.getElementById("botones-detalle").style.display = "flex";
         document.getElementById("botones-edicion").style.display = "none";
     }
- 
+
     async function guardarCambios() {
-        const id = document.getElementById("e-id").value;
+        const id         = document.getElementById("e-id").value;
+        const usuarioVal = document.getElementById("e-usuario").value.trim();
+        const estaDisponible = !usuarioVal || usuarioVal.toUpperCase() === "DISPONIBLE";
+
         const payload = {
             tipo_equipo:         document.getElementById("e-tipo").value,
             marca:               document.getElementById("e-marca").value,
@@ -658,14 +664,16 @@
             condicion_equipo:    document.getElementById("e-condicion").value,
             comentario:          document.getElementById("e-comentario").value,
             fecha_compra:        document.getElementById("e-fecha-compra").value,
-            fecha_asig:          document.getElementById("e-fecha-asig").value   || null,
-            fecha_mantenimiento: document.getElementById("e-fecha-mant").value   || null,
-            usur_ingresa:        document.getElementById("e-usuario").value       || null,
+            fecha_asig:          estaDisponible ? null : (document.getElementById("e-fecha-asig").value || null),
+            fecha_mantenimiento: document.getElementById("e-fecha-mant").value || null,
+            usur_ingresa:        estaDisponible ? "DISPONIBLE" : usuarioVal,
             foto_equipo:         null
         };
+
         try {
             const res = await fetch(`${API_URL}/inventario/${id}`, {
-                method: "PUT", headers: { "Content-Type": "application/json" },
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
             });
             if (res.ok) {
@@ -678,7 +686,7 @@
             }
         } catch { swal("Error", "No se pudo conectar con la API.", "error"); }
     }
- 
+
     function eliminarEquipo() {
         const id = equipoActual.id_equipo;
         swal({
@@ -704,40 +712,27 @@
             } catch { swal("Error", "No se pudo conectar con la API.", "error"); }
         });
     }
- 
-    // ══════════════════════════════════════════════════
-    //  ★ PILA DE DEVOLUCIONES — funciones nuevas
-    // ══════════════════════════════════════════════════
- 
-    /**
-     * Busca el equipo por activo y/o serie para previsualizar antes
-     * de confirmar la devolución. No llama aún al endpoint de devolver.
-     */
+
+    // ── Pila de devoluciones ─────────────────────────────────
     async function buscarParaDevolucion() {
         const activo = document.getElementById("dev-activo").value.trim();
         const serie  = document.getElementById("dev-serie").value.trim();
- 
+
         if (!activo && !serie) {
             swal("Atención", "Ingresa el Núm. Activo o el Núm. Serie para buscar el equipo.", "warning");
             return;
         }
- 
         mostrarSpinnerDev(true);
         limpiarPreview();
- 
         try {
             const res  = await fetch(`${API_URL}/inventario`);
             const data = await res.json();
- 
-            // Buscar coincidencia exacta (activo tiene prioridad; serie como segundo criterio)
             const encontrado = data.inventario.find(e => {
-                const okActivo = activo ? (e.activo  && e.activo.toUpperCase()  === activo.toUpperCase())  : false;
-                const okSerie  = serie  ? (e.serie   && e.serie.toUpperCase()   === serie.toUpperCase())   : false;
-                // Debe coincidir con al menos uno de los ingresados
-                if (activo && serie) return okActivo && okSerie;   // ambos → debe cumplir los dos
-                return okActivo || okSerie;                         // uno solo → cualquiera basta
+                const okActivo = activo ? (e.activo && e.activo.toUpperCase() === activo.toUpperCase()) : false;
+                const okSerie  = serie  ? (e.serie  && e.serie.toUpperCase()  === serie.toUpperCase())  : false;
+                if (activo && serie) return okActivo && okSerie;
+                return okActivo || okSerie;
             });
- 
             if (!encontrado) {
                 swal("No encontrado", "No se encontró ningún equipo con los datos ingresados.", "warning");
             } else {
@@ -745,47 +740,31 @@
                 mostrarPreview(encontrado);
                 document.getElementById("btn-confirmar-dev").disabled = false;
             }
-        } catch {
-            swal("Error", "No se pudo conectar con la API.", "error");
-        }
+        } catch { swal("Error", "No se pudo conectar con la API.", "error"); }
         mostrarSpinnerDev(false);
     }
- 
-    /** Muestra la tarjeta de previsualización con los datos del equipo. */
+
     function mostrarPreview(e) {
-        document.getElementById("pv-id").textContent        = e.id_equipo      ?? "-";
-        document.getElementById("pv-tipo").textContent      = e.tipo_equipo    ?? "-";
-        document.getElementById("pv-marca").textContent     = e.marca          ?? "-";
-        document.getElementById("pv-modelo").textContent    = e.modelo         ?? "-";
-        document.getElementById("pv-serie").textContent     = e.serie          ?? "-";
-        document.getElementById("pv-activo").textContent    = e.activo         ?? "-";
-        document.getElementById("pv-estado").textContent    = e.estado         ?? "-";
-        document.getElementById("pv-fecha-asig").textContent = e.fecha_asig    ?? "Sin asignar";
- 
+        document.getElementById("pv-id").textContent         = e.id_equipo   ?? "-";
+        document.getElementById("pv-tipo").textContent       = e.tipo_equipo ?? "-";
+        document.getElementById("pv-marca").textContent      = e.marca       ?? "-";
+        document.getElementById("pv-modelo").textContent     = e.modelo      ?? "-";
+        document.getElementById("pv-serie").textContent      = e.serie       ?? "-";
+        document.getElementById("pv-activo").textContent     = e.activo      ?? "-";
+        document.getElementById("pv-estado").textContent     = e.estado      ?? "-";
+        document.getElementById("pv-fecha-asig").textContent = e.fecha_asig  ?? "Sin asignar";
         document.getElementById("dev-preview").classList.remove("d-none");
- 
-        // Advertencia si no tiene fecha de asignación
-        const alertaNoAsig = document.getElementById("dev-alerta-noasig");
-        if (!e.fecha_asig) {
-            alertaNoAsig.classList.remove("d-none");
-        } else {
-            alertaNoAsig.classList.add("d-none");
-        }
+        const alerta = document.getElementById("dev-alerta-noasig");
+        e.fecha_asig ? alerta.classList.add("d-none") : alerta.classList.remove("d-none");
     }
- 
-    /**
-     * Confirma la devolución: llama a POST /inventario/devolver/{id}
-     * y envía la fecha_devolucion ingresada manualmente como query param.
-     */
+
     async function confirmarDevolucion() {
         if (!equipoDevolucion) return;
- 
         const fechaDev = document.getElementById("dev-fecha").value;
         if (!fechaDev) {
             swal("Atención", "Debes ingresar la fecha de devolución.", "warning");
             return;
         }
- 
         swal({
             title: "¿Confirmar devolución?",
             text:  `Equipo ID ${equipoDevolucion.id_equipo} — ${equipoDevolucion.tipo_equipo ?? ""} ${equipoDevolucion.marca ?? ""}`,
@@ -794,26 +773,21 @@
         }).then(async (ok) => {
             if (!ok) return;
             try {
-                // Enviamos la fecha manual como query param
                 const url = `${API_URL}/inventario/devolver/${equipoDevolucion.id_equipo}?fecha_devolucion=${fechaDev}`;
                 const res = await fetch(url, { method: "POST" });
- 
                 if (res.ok) {
                     const data = await res.json();
-                    swal("✅ Devolución registrada",
+                    swal("Devolución registrada",
                          `Equipo ${data.id_equipo} devuelto el ${data.fecha_devolucion}`, "success");
                     limpiarDevolucion();
                 } else {
                     const err = await res.json();
                     swal("Error", err.detail ?? "No se pudo registrar la devolución.", "error");
                 }
-            } catch {
-                swal("Error", "No se pudo conectar con la API.", "error");
-            }
+            } catch { swal("Error", "No se pudo conectar con la API.", "error"); }
         });
     }
- 
-    /** Limpia el formulario de devolución por completo. */
+
     function limpiarDevolucion() {
         document.getElementById("dev-activo").value = "";
         document.getElementById("dev-serie").value  = "";
@@ -822,38 +796,27 @@
         equipoDevolucion = null;
         limpiarPreview();
     }
- 
+
     function limpiarPreview() {
         document.getElementById("dev-preview").classList.add("d-none");
         document.getElementById("dev-alerta-noasig").classList.add("d-none");
     }
- 
-    /**
-     * Carga todos los equipos con FECHA_DEVOLUCION registrada y sin FECHA_ASIG
-     * (es decir, los que están actualmente en la pila LIFO) y los muestra en la tabla.
-     */
+
     async function verPilaRegistros() {
         try {
             const res  = await fetch(`${API_URL}/inventario`);
             const data = await res.json();
- 
-            // Filtrar: devueltos (fecha_devolucion != null) y no reasignados (fecha_asig == null)
             const devueltos = data.inventario
                 .filter(e => e.fecha_devolucion && !e.fecha_asig)
-                .sort((a, b) => new Date(b.fecha_devolucion) - new Date(a.fecha_devolucion)); // LIFO: más reciente primero
- 
+                .sort((a, b) => new Date(b.fecha_devolucion) - new Date(a.fecha_devolucion));
             pilaFull = devueltos;
             renderTablaPila(devueltos);
- 
             const btn = document.getElementById("tab-pila-registros");
             btn.removeAttribute("disabled");
             bootstrap.Tab.getOrCreateInstance(btn).show();
-        } catch {
-            swal("Error", "No se pudo cargar la pila de devoluciones.", "error");
-        }
+        } catch { swal("Error", "No se pudo cargar la pila de devoluciones.", "error"); }
     }
- 
-    /** Filtra la tabla de la pila por tipo de equipo. */
+
     function filtrarPila() {
         const tipo = document.getElementById("pila-filtro-tipo").value;
         const filtrados = tipo
@@ -861,58 +824,44 @@
             : pilaFull;
         renderTablaPila(filtrados);
     }
- 
-    /** Renderiza la tabla de devoluciones con numeración de posición en la pila. */
+
     function renderTablaPila(lista) {
-        const tbody   = document.getElementById("cuerpo-tabla-dev");
-        const vacios  = document.getElementById("pila-vacia");
+        const tbody  = document.getElementById("cuerpo-tabla-dev");
+        const vacios = document.getElementById("pila-vacia");
         tbody.innerHTML = "";
- 
         document.getElementById("total-devoluciones").textContent = `${lista.length} en pila`;
- 
-        if (lista.length === 0) {
-            vacios.classList.remove("d-none");
-            return;
-        }
+        if (lista.length === 0) { vacios.classList.remove("d-none"); return; }
         vacios.classList.add("d-none");
- 
         lista.forEach((e, idx) => {
-            // Posición 1 = tope de la pila (el siguiente en salir con LIFO)
             const posicion = idx === 0
-                ? `<span class="badge bg-success">🔝 Tope (#1)</span>`
+                ? `<span class="badge bg-success">Tope (#1)</span>`
                 : `#${idx + 1}`;
- 
             tbody.innerHTML += `
                 <tr ${idx === 0 ? 'class="table-success"' : ""}>
-                    <td>${e.id_equipo      ?? "-"}</td>
-                    <td>${e.tipo_equipo    ?? "-"}</td>
-                    <td>${e.marca          ?? "-"}</td>
-                    <td>${e.modelo         ?? "-"}</td>
-                    <td>${e.serie          ?? "-"}</td>
-                    <td>${e.activo         ?? "-"}</td>
-                    <td>${e.estado         ?? "-"}</td>
+                    <td>${e.id_equipo   ?? "-"}</td>
+                    <td>${e.tipo_equipo ?? "-"}</td>
+                    <td>${e.marca       ?? "-"}</td>
+                    <td>${e.modelo      ?? "-"}</td>
+                    <td>${e.serie       ?? "-"}</td>
+                    <td>${e.activo      ?? "-"}</td>
+                    <td>${e.estado      ?? "-"}</td>
                     <td>${e.fecha_devolucion ? e.fecha_devolucion.substring(0,10) : "-"}</td>
                     <td class="text-center">${posicion}</td>
                 </tr>`;
         });
     }
- 
-    // ══════════════════════════════════════════════════
-    //  UTILIDADES
-    // ══════════════════════════════════════════════════
+
+    // ── Utilidades ───────────────────────────────────────────
     function volverBusqueda()   { bootstrap.Tab.getOrCreateInstance(document.getElementById("tab-busqueda")).show(); }
     function volverDevolucion() { bootstrap.Tab.getOrCreateInstance(document.getElementById("tab-devolucion")).show(); }
-    function mostrarSpinner(v)    { document.getElementById("spinner").style.display    = v ? "block" : "none"; }
+    function mostrarSpinner(v)    { document.getElementById("spinner").style.display     = v ? "block" : "none"; }
     function mostrarSpinnerDev(v) { document.getElementById("spinner-dev").style.display = v ? "block" : "none"; }
- 
-    // Enter en campos de filtro dispara búsqueda
+
     ["f-serie","f-activo"].forEach(id => {
         document.getElementById(id).addEventListener("keypress", e => {
             if (e.key === "Enter") buscarConFiltros();
         });
     });
- 
-    // Enter en campos de devolución dispara búsqueda de equipo
     ["dev-activo","dev-serie"].forEach(id => {
         document.getElementById(id).addEventListener("keypress", e => {
             if (e.key === "Enter") buscarParaDevolucion();
