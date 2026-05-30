@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <title>Login - Inventario IDT</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a237e 0%, #4364EA 60%, #7c9ff5 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .login-card {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 420px;
+            padding: 48px 40px 40px;
+            animation: fadeIn .5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-logo {
+            width: 70px; height: 70px;
+            background: linear-gradient(135deg, #4364EA, #1a237e);
+            border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 2rem;
+            box-shadow: 0 8px 20px rgba(67,100,234,0.4);
+        }
+
+        .login-title {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a237e;
+            margin-bottom: 4px;
+        }
+
+        .login-subtitle {
+            text-align: center;
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-bottom: 32px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            border: 1.5px solid #dee2e6;
+            padding: 12px 16px;
+            font-size: 0.95rem;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        .form-control:focus {
+            border-color: #4364EA;
+            box-shadow: 0 0 0 3px rgba(67,100,234,0.15);
+            outline: none;
+        }
+
+        .input-group-text {
+            border-radius: 10px 0 0 10px;
+            background: #f8f9ff;
+            border: 1.5px solid #dee2e6;
+            border-right: none;
+            color: #4364EA;
+        }
+
+        .input-group .form-control {
+            border-radius: 0 10px 10px 0;
+            border-left: none;
+        }
+
+        .input-group:focus-within .input-group-text {
+            border-color: #4364EA;
+        }
+
+        .btn-toggle-pass {
+            border-radius: 0 10px 10px 0 !important;
+            border: 1.5px solid #dee2e6;
+            border-left: none;
+            background: #f8f9ff;
+            color: #6c757d;
+            cursor: pointer;
+            padding: 0 14px;
+            transition: color .2s;
+        }
+        .btn-toggle-pass:hover { color: #4364EA; }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #4364EA, #1a237e);
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            border: none;
+            cursor: pointer;
+            transition: opacity .2s, transform .1s;
+            margin-top: 8px;
+            letter-spacing: 0.5px;
+        }
+        .btn-login:hover   { opacity: .92; }
+        .btn-login:active  { transform: scale(.98); }
+        .btn-login:disabled { opacity: .6; cursor: not-allowed; }
+
+        .error-msg {
+            font-size: 0.82rem;
+            color: #dc3545;
+            margin-top: 6px;
+            min-height: 18px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .footer-text {
+            text-align: center;
+            font-size: 0.78rem;
+            color: #adb5bd;
+            margin-top: 28px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+
+    <!-- Logo -->
+    <div class="login-logo">🖥️</div>
+
+    <h1 class="login-title">Inventario IDT</h1>
+    <p class="login-subtitle">Ingresa tus credenciales para continuar</p>
+
+    <!-- Formulario -->
+    <div class="mb-4">
+        <label class="form-label">Usuario</label>
+        <div class="input-group">
+            <span class="input-group-text">👤</span>
+            <input type="text" class="form-control" id="inp-usuario"
+                   placeholder="Ej: soporte5"
+                   autocomplete="username"
+                   onkeypress="if(event.key==='Enter') intentarLogin()">
+        </div>
+        <div class="error-msg" id="err-usuario"></div>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Contraseña</label>
+        <div class="input-group">
+            <span class="input-group-text">🔒</span>
+            <input type="password" class="form-control" id="inp-password"
+                   placeholder="••••••••"
+                   autocomplete="current-password"
+                   onkeypress="if(event.key==='Enter') intentarLogin()">
+            <button class="btn-toggle-pass" type="button" onclick="togglePassword()" id="btn-toggle">
+                👁
+            </button>
+        </div>
+        <div class="error-msg" id="err-password"></div>
+    </div>
+
+    <!-- Mensaje de error general -->
+    <div class="error-msg" id="err-general" style="justify-content:center; font-size:0.88rem;"></div>
+
+    <!-- Botón -->
+    <button class="btn-login" id="btn-login" onclick="intentarLogin()">
+        Iniciar sesión
+    </button>
+
+    <p class="footer-text">Sistema de Inventario IDT &nbsp;·&nbsp; v1.0</p>
+</div>
+
+<script>
+    // ── Credenciales válidas ─────────────────────────────────
+    const USUARIOS = [
+        { usuario: "admin1", password: "12345", redirigir: "index.html" }
+    ];
+
+    let intentos = 0;
+    const MAX_INTENTOS = 3;
+
+    // ── Toggle mostrar/ocultar contraseña ────────────────────
+    function togglePassword() {
+        const inp = document.getElementById("inp-password");
+        const btn = document.getElementById("btn-toggle");
+        if (inp.type === "password") {
+            inp.type = "text";
+            btn.textContent = "X";
+        } else {
+            inp.type = "password";
+            btn.textContent = "👁";
+        }
+    }
+
+    // ── Limpiar errores ──────────────────────────────────────
+    function limpiarErrores() {
+        document.getElementById("err-usuario").textContent  = "";
+        document.getElementById("err-password").textContent = "";
+        document.getElementById("err-general").textContent  = "";
+    }
+
+    // ── Intentar login ───────────────────────────────────────
+    function intentarLogin() {
+        limpiarErrores();
+
+        const usuario  = document.getElementById("inp-usuario").value.trim();
+        const password = document.getElementById("inp-password").value;
+
+        let hayError = false;
+        if (!usuario) {
+            document.getElementById("err-usuario").textContent = "⚠ Ingresa tu usuario.";
+            hayError = true;
+        }
+        if (!password) {
+            document.getElementById("err-password").textContent = "⚠ Ingresa tu contraseña.";
+            hayError = true;
+        }
+        if (hayError) return;
+
+        const match = USUARIOS.find(
+            u => u.usuario === usuario && u.password === password
+        );
+
+        if (match) {
+            accesoCorrecto(match.redirigir);
+        } else {
+            intentos++;
+            const restantes = MAX_INTENTOS - intentos;
+
+            if (intentos >= MAX_INTENTOS) {
+                bloquearFormulario();
+            } else {
+                document.getElementById("err-general").textContent =
+                    `❌ Usuario o contraseña incorrectos. Intentos restantes: ${restantes}`;
+                sacudirTarjeta();
+            }
+        }
+    }
+
+    // ── Acceso correcto: redirige directamente ───────────────
+    function accesoCorrecto(destino) {
+        const btn = document.getElementById("btn-login");
+        btn.disabled    = true;
+        btn.textContent = "✅ Acceso concedido";
+        btn.style.background = "linear-gradient(135deg, #198754, #0f5132)";
+
+        setTimeout(() => { window.location.href = destino; }, 800);
+    }
+
+    // ── Bloquear formulario tras máx intentos ────────────────
+    function bloquearFormulario() {
+        document.getElementById("inp-usuario").disabled  = true;
+        document.getElementById("inp-password").disabled = true;
+        document.getElementById("btn-login").disabled    = true;
+        document.getElementById("btn-login").textContent = "🔒 Bloqueado";
+        document.getElementById("btn-login").style.background = "#6c757d";
+
+        let seg = 30;
+        document.getElementById("err-general").innerHTML =
+            `🔒 Demasiados intentos fallidos. Espera <strong id="countdown">${seg}</strong>s para reintentar.`;
+
+        const cuenta = setInterval(() => {
+            seg--;
+            const cd = document.getElementById("countdown");
+            if (cd) cd.textContent = seg;
+            if (seg <= 0) {
+                clearInterval(cuenta);
+                desbloquearFormulario();
+            }
+        }, 1000);
+    }
+
+    // ── Desbloquear tras espera ──────────────────────────────
+    function desbloquearFormulario() {
+        intentos = 0;
+        document.getElementById("inp-usuario").disabled  = false;
+        document.getElementById("inp-password").disabled = false;
+        const btn = document.getElementById("btn-login");
+        btn.disabled    = false;
+        btn.textContent = "Iniciar sesión";
+        btn.style.background = "linear-gradient(135deg, #4364EA, #1a237e)";
+        limpiarErrores();
+    }
+
+    // ── Animación de sacudida en error ───────────────────────
+    function sacudirTarjeta() {
+        const card = document.querySelector(".login-card");
+        card.style.animation = "none";
+        card.style.transform = "translateX(-8px)";
+        setTimeout(() => card.style.transform = "translateX(8px)",  80);
+        setTimeout(() => card.style.transform = "translateX(-6px)", 160);
+        setTimeout(() => card.style.transform = "translateX(6px)",  240);
+        setTimeout(() => card.style.transform = "translateX(0)",    320);
+    }
+
+    window.addEventListener("load", () => {
+        document.getElementById("inp-usuario").focus();
+    });
+</script>
+</body>
+</html>
