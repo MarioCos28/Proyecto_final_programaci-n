@@ -77,7 +77,6 @@
 
     <div class="tab-content mt-3">
 
-        <!-- PESTAÑA 1: BÚSQUEDA CON FILTROS -->
         <div id="consulta1" class="tab-pane fade show active" role="tabpanel">
             <div class="card p-4 shadow-sm" id="card-filtros">
                 <h5 class="mb-3">Filtros de Búsqueda</h5>
@@ -130,7 +129,6 @@
             </div>
         </div>
 
-        <!-- PESTAÑA 2: RESULTADOS CON PAGINACIÓN -->
         <div id="resultado1" class="tab-pane fade" role="tabpanel">
             <div class="card p-4 shadow-sm">
                 <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
@@ -175,7 +173,6 @@
             </div>
         </div>
 
-        <!-- PESTAÑA 3: PILA DE DEVOLUCIONES -->
         <div id="devolucion1" class="tab-pane fade" role="tabpanel">
             <div class="card p-4 shadow-sm" id="card-devolucion">
                 <h5 class="mb-1 text-success">Registrar Devolución de Equipo</h5>
@@ -246,7 +243,6 @@
             </div>
         </div>
 
-        <!-- PESTAÑA 4: REGISTROS DE LA PILA (LIFO) -->
         <div id="pila-registros1" class="tab-pane fade" role="tabpanel">
             <div class="card p-4 shadow-sm">
                 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
@@ -303,10 +299,8 @@
     </div>
 </div>
 
-<!-- ── Botón Salir (fuera del container, en el HTML) ── -->
 <button class="btn-salir" onclick="cerrarSesion()"> Salir</button>
 
-<!-- MODAL: VER DETALLE / EDITAR -->
 <div class="modal fade" id="modalDetalle" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
@@ -315,7 +309,6 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <!-- VISTA SOLO LECTURA -->
                 <div id="vista-detalle">
                     <div class="row g-3">
                         <div class="col-md-6"><label class="fw-bold">ID:</label><p id="d-id"></p></div>
@@ -333,7 +326,6 @@
                         <div class="col-md-12"><label class="fw-bold">Comentario:</label><p id="d-comentario"></p></div>
                     </div>
                 </div>
-                <!-- VISTA EDICIÓN -->
                 <div id="vista-edicion" style="display:none;">
                     <div class="row g-3">
                         <input type="hidden" id="e-id">
@@ -429,7 +421,6 @@
     let paginaActual     = 1;
     let filasPorPagina   = 10;
 
-    // ── Navegación ───────────────────────────────────────────
     function irAIngreso() { window.location.href = "index.html"; }
 
     function cerrarSesion() {
@@ -446,7 +437,6 @@
         });
     }
 
-    // ── Búsqueda con filtros ─────────────────────────────────
     async function buscarConFiltros() {
         const fSerie  = document.getElementById("f-serie").value.trim();
         const fActivo = document.getElementById("f-activo").value.trim();
@@ -500,7 +490,6 @@
         document.getElementById("f-marca").value  = "";
     }
 
-    // ── Paginación ───────────────────────────────────────────
     function iniciarPaginacion(datos) {
         resultadosFull = datos;
         paginaActual   = 1;
@@ -598,7 +587,6 @@
             partes.length ? "🔍 Filtros: " + partes.join(" &nbsp;|&nbsp; ") : "";
     }
 
-    // ── Modal detalle ────────────────────────────────────────
     function abrirDetalle(equipo) {
         equipoActual = equipo;
         document.getElementById("d-id").textContent           = equipo.id_equipo            ?? "-";
@@ -713,7 +701,6 @@
         });
     }
 
-    // ── Pila de devoluciones ─────────────────────────────────
     async function buscarParaDevolucion() {
         const activo = document.getElementById("dev-activo").value.trim();
         const serie  = document.getElementById("dev-serie").value.trim();
@@ -851,7 +838,6 @@
         });
     }
 
-    // ── Utilidades ───────────────────────────────────────────
     function volverBusqueda()   { bootstrap.Tab.getOrCreateInstance(document.getElementById("tab-busqueda")).show(); }
     function volverDevolucion() { bootstrap.Tab.getOrCreateInstance(document.getElementById("tab-devolucion")).show(); }
     function mostrarSpinner(v)    { document.getElementById("spinner").style.display     = v ? "block" : "none"; }
