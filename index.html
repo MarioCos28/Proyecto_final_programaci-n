@@ -28,7 +28,6 @@
         .feedback-campo.error    { color: #dc3545; }
         .feedback-campo.checking { color: #6c757d; }
 
-        /* Spinner pequeño dentro del campo */
         .spinner-field {
             width: 14px; height: 14px;
             border: 2px solid #ccc;
@@ -39,7 +38,6 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Botón salir fijo */
         .btn-salir {
             position: fixed;
             bottom: 24px;
@@ -159,7 +157,6 @@
                     </div>
                 </div>
 
-                <!-- MONITOR -->
                 <div id="ing_monitor" class="ingreso_equipo" style="display: none">
                     <div class="row mb-3"><div><strong>Registro de Monitor</strong></div></div>
                     <div class="row mb-3">
@@ -229,7 +226,6 @@
                     </div>
                 </div>
 
-                <!-- CAÑONERA -->
                 <div id="ing_canon" class="ingreso_equipo" style="display: none">
                     <div class="row mb-3"><div><strong>Registro de Cañonera</strong></div></div>
                     <div class="row mb-3">
@@ -296,7 +292,6 @@
                     </div>
                 </div>
 
-                <!-- SWITCH -->
                 <div id="ing_switch" class="ingreso_equipo" style="display: none">
                     <div class="row mb-3"><div><strong>Registro de Switch</strong></div></div>
                     <div class="row mb-3">
@@ -363,7 +358,6 @@
                     </div>
                 </div>
 
-                <!-- OTROS -->
                 <div id="ing_otros" class="ingreso_equipo" style="display: none">
                     <div class="row mb-3"><div><strong>Registro para otros equipos</strong></div></div>
                     <div class="row mb-3">
@@ -429,7 +423,6 @@
                     </div>
                 </div>
 
-                <!-- Botones de acción -->
                 <button type="button" onclick="ingreso_equipo();" id="btnIngresar" class="btn btn-primary">
                     Ingresar registro
                 </button>
@@ -444,13 +437,11 @@
         </div>
     </div>
 
-    <!-- Botón Salir fijo (fuera del container, en el HTML) -->
     <button class="btn-salir" onclick="cerrarSesion()"> Salir</button>
 
     <script>
         const API_URL = "http://127.0.0.1:8000";
 
-        // ── Cache del inventario ─────────────────────────────────────────────────
         let inventarioCache = [];
 
         async function cargarInventario() {
@@ -463,10 +454,8 @@
             }
         }
 
-        // Cargar al inicio
         cargarInventario();
 
-        // ── Navegación ───────────────────────────────────────────────────────────
         function irAConsulta() { window.location.href = "consulta.html"; }
 
         function cerrarSesion() {
@@ -483,14 +472,12 @@
             });
         }
 
-        // ── Debounce: espera 350ms después del último teclazo ────────────────────
         const timers = {};
         function debounce(key, fn, delay = 350) {
             clearTimeout(timers[key]);
             timers[key] = setTimeout(fn, delay);
         }
 
-        // ── Validación en vivo ───────────────────────────────────────────────────
         function validarCampoEnVivo(input, tipo, fbId) {
             const valor = input.value.trim();
             const fb    = document.getElementById(fbId);
@@ -524,7 +511,6 @@
             if (estado === 'error') input.classList.add('campo-error');
         }
 
-        // ── Mostrar/ocultar sección según tipo de equipo ─────────────────────────
         const opt = document.getElementById("tipo_equipo");
         if (opt) {
             opt.addEventListener("change", function(e) {
@@ -537,7 +523,6 @@
             });
         }
 
-        // ── Mapa de campos por tipo de equipo ────────────────────────────────────
         const camposPorTipo = {
             "1": {
                 tipo: "Laptop",
@@ -591,7 +576,6 @@
             }
         };
 
-        // ── Botón "Ingresar registro" ─────────────────────────────────────────────
         function ingreso_equipo() {
             const tipo = document.getElementById("tipo_equipo").value;
 
@@ -610,7 +594,6 @@
             if (!campos.condicion())  { swal("Validar datos", "Seleccione la condición del equipo", "error");   return; }
             if (!campos.comentario()) { swal("Validar datos", "Ingrese una observación o comentario", "error"); return; }
 
-            // Bloquear si hay duplicados detectados en vivo
             const serieDup  = inventarioCache.some(e => e.serie  && e.serie.toUpperCase()  === campos.serie().toUpperCase());
             const activoDup = inventarioCache.some(e => e.activo && e.activo.toUpperCase() === campos.activo().toUpperCase());
 
@@ -636,7 +619,6 @@
             });
         }
 
-        // ── Envío a FastAPI ───────────────────────────────────────────────────────
         async function enviarAFastAPI(campos) {
             const hoy    = new Date().toISOString().split("T")[0];
             const serie  = campos.serie();
@@ -679,7 +661,6 @@
             }
         }
 
-        // ── Limpiar formulario ────────────────────────────────────────────────────
         function limpiarFormulario() {
             document.getElementById("tipo_equipo").value = "0";
             document.querySelectorAll(".ingreso_equipo").forEach(el => el.style.display = "none");

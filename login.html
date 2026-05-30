@@ -149,17 +149,15 @@
 
 <div class="login-card">
 
-    <!-- Logo -->
-    <div class="login-logo">🖥️</div>
+    <div class="login-logo"></div>
 
     <h1 class="login-title">Inventario IDT</h1>
     <p class="login-subtitle">Ingresa tus credenciales para continuar</p>
 
-    <!-- Formulario -->
     <div class="mb-4">
         <label class="form-label">Usuario</label>
         <div class="input-group">
-            <span class="input-group-text">👤</span>
+            <span class="input-group-text"></span>
             <input type="text" class="form-control" id="inp-usuario"
                    placeholder="Ej: soporte5"
                    autocomplete="username"
@@ -171,7 +169,7 @@
     <div class="mb-3">
         <label class="form-label">Contraseña</label>
         <div class="input-group">
-            <span class="input-group-text">🔒</span>
+            <span class="input-group-text"></span>
             <input type="password" class="form-control" id="inp-password"
                    placeholder="••••••••"
                    autocomplete="current-password"
@@ -183,10 +181,8 @@
         <div class="error-msg" id="err-password"></div>
     </div>
 
-    <!-- Mensaje de error general -->
     <div class="error-msg" id="err-general" style="justify-content:center; font-size:0.88rem;"></div>
 
-    <!-- Botón -->
     <button class="btn-login" id="btn-login" onclick="intentarLogin()">
         Iniciar sesión
     </button>
@@ -195,7 +191,6 @@
 </div>
 
 <script>
-    // ── Credenciales válidas ─────────────────────────────────
     const USUARIOS = [
         { usuario: "admin1", password: "12345", redirigir: "index.html" }
     ];
@@ -203,7 +198,6 @@
     let intentos = 0;
     const MAX_INTENTOS = 3;
 
-    // ── Toggle mostrar/ocultar contraseña ────────────────────
     function togglePassword() {
         const inp = document.getElementById("inp-password");
         const btn = document.getElementById("btn-toggle");
@@ -216,14 +210,12 @@
         }
     }
 
-    // ── Limpiar errores ──────────────────────────────────────
     function limpiarErrores() {
         document.getElementById("err-usuario").textContent  = "";
         document.getElementById("err-password").textContent = "";
         document.getElementById("err-general").textContent  = "";
     }
 
-    // ── Intentar login ───────────────────────────────────────
     function intentarLogin() {
         limpiarErrores();
 
@@ -255,23 +247,21 @@
                 bloquearFormulario();
             } else {
                 document.getElementById("err-general").textContent =
-                    `❌ Usuario o contraseña incorrectos. Intentos restantes: ${restantes}`;
+                    ` Usuario o contraseña incorrectos. Intentos restantes: ${restantes}`;
                 sacudirTarjeta();
             }
         }
     }
 
-    // ── Acceso correcto: redirige directamente ───────────────
     function accesoCorrecto(destino) {
         const btn = document.getElementById("btn-login");
         btn.disabled    = true;
-        btn.textContent = "✅ Acceso concedido";
+        btn.textContent = " Acceso concedido";
         btn.style.background = "linear-gradient(135deg, #198754, #0f5132)";
 
         setTimeout(() => { window.location.href = destino; }, 800);
     }
 
-    // ── Bloquear formulario tras máx intentos ────────────────
     function bloquearFormulario() {
         document.getElementById("inp-usuario").disabled  = true;
         document.getElementById("inp-password").disabled = true;
@@ -281,7 +271,7 @@
 
         let seg = 30;
         document.getElementById("err-general").innerHTML =
-            `🔒 Demasiados intentos fallidos. Espera <strong id="countdown">${seg}</strong>s para reintentar.`;
+            ` Demasiados intentos fallidos. Espera <strong id="countdown">${seg}</strong>s para reintentar.`;
 
         const cuenta = setInterval(() => {
             seg--;
@@ -294,7 +284,6 @@
         }, 1000);
     }
 
-    // ── Desbloquear tras espera ──────────────────────────────
     function desbloquearFormulario() {
         intentos = 0;
         document.getElementById("inp-usuario").disabled  = false;
@@ -306,7 +295,6 @@
         limpiarErrores();
     }
 
-    // ── Animación de sacudida en error ───────────────────────
     function sacudirTarjeta() {
         const card = document.querySelector(".login-card");
         card.style.animation = "none";
